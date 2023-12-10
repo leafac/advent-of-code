@@ -24,24 +24,72 @@ const startCoordinate = grid.flatMap((line, y) => {
   return index === -1 ? [] : [{ x: index, y }];
 })[0];
 
-let largestLoop = [];
+let largestLoop = {
+  coordinates: [],
+  coordinatesToExploreOnRight: [],
+  coordinatesToExploreOnLeft: [],
+};
 for (let direction of ["north", "east", "south", "west"]) {
+  const coordinates = [];
+  const coordinatesToExploreOnRight = [];
+  const coordinatesToExploreOnLeft = [];
   let coordinate = startCoordinate;
-  const potentialLoop = [];
   while (true) {
-    potentialLoop.push(coordinate);
-    coordinate =
-      direction === "north"
-        ? { x: coordinate.x, y: coordinate.y - 1 }
-        : direction === "east"
-        ? { x: coordinate.x + 1, y: coordinate.y }
-        : direction === "south"
-        ? { x: coordinate.x, y: coordinate.y + 1 }
-        : direction === "west"
-        ? { x: coordinate.x - 1, y: coordinate.y }
-        : (() => {
-            throw new Error();
-          })();
+    coordinates.push(coordinate);
+    if (direction === "north") {
+      coordinate = {
+        x: coordinate.x,
+        y: coordinate.y - 1,
+      };
+      coordinatesToExploreOnRight.push({
+        x: coordinate.x + 1,
+        y: coordinate.y,
+      });
+      coordinatesToExploreOnLeft.push({
+        x: coordinate.x - 1,
+        y: coordinate.y,
+      });
+    } else if (direction === "east") {
+      coordinate = {
+        x: coordinate.x + 1,
+        y: coordinate.y,
+      };
+      coordinatesToExploreOnRight.push({
+        x: coordinate.x,
+        y: coordinate.y + 1,
+      });
+      coordinatesToExploreOnLeft.push({
+        x: coordinate.x,
+        y: coordinate.y - 1,
+      });
+    } else if (direction === "south") {
+      coordinate = {
+        x: coordinate.x,
+        y: coordinate.y + 1,
+      };
+      coordinatesToExploreOnRight.push({
+        x: coordinate.x - 1,
+        y: coordinate.y,
+      });
+      coordinatesToExploreOnLeft.push({
+        x: coordinate.x + 1,
+        y: coordinate.y,
+      });
+    } else if (direction === "west") {
+      coordinate = {
+        x: coordinate.x - 1,
+        y: coordinate.y,
+      };
+      coordinatesToExploreOnRight.push({
+        x: coordinate.x,
+        y: coordinate.y - 1,
+      });
+      coordinatesToExploreOnLeft.push({
+        x: coordinate.x,
+        y: coordinate.y + 1,
+      });
+    }
+
     if (
       coordinate.x < 0 ||
       coordinate.x === grid[0].length ||
@@ -53,8 +101,12 @@ for (let direction of ["north", "east", "south", "west"]) {
     const tile = grid[coordinate.y][coordinate.x];
 
     if (tile === "S") {
-      if (largestLoop.length < potentialLoop.length)
-        largestLoop = potentialLoop;
+      if (largestLoop.coordinates.length < coordinates.length)
+        largestLoop = {
+          coordinates,
+          coordinatesToExploreOnRight,
+          coordinatesToExploreOnLeft,
+        };
       break;
     } else if (tile === "|" && direction === "south") direction = "south";
     else if (tile === "|" && direction === "north") direction = "north";
@@ -72,5 +124,5 @@ for (let direction of ["north", "east", "south", "west"]) {
   }
 }
 
-console.log(Math.floor(largestLoop.length / 2));
+console.log(Math.floor(largestLoop.coordinates.length / 2));
 console.log(largestLoop);

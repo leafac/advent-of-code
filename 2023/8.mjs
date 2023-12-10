@@ -786,9 +786,14 @@ const graph = Object.fromEntries(
 );
 
 const nodes = Object.keys(graph).filter((node) => node.endsWith("A"));
-let steps;
-for (steps = 0; !nodes.every((node) => node.endsWith("Z")); steps++)
+let directionIndex = 0;
+let steps = 0n;
+while (!nodes.every((node) => node.endsWith("Z"))) {
   for (const nodeIndex of nodes.keys())
-    nodes[nodeIndex] =
-      graph[nodes[nodeIndex]][directions[steps % directions.length]];
+    nodes[nodeIndex] = graph[nodes[nodeIndex]][directions[directionIndex]];
+  directionIndex++;
+  if (directionIndex == directions.length) directionIndex = 0;
+  steps++;
+}
+
 console.log(steps);

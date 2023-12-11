@@ -786,14 +786,57 @@ const graph = Object.fromEntries(
 );
 
 const nodes = Object.keys(graph).filter((node) => node.endsWith("A"));
-let directionIndex = 0;
-let steps = 0n;
-while (!nodes.every((node) => node.endsWith("Z"))) {
-  for (const nodeIndex of nodes.keys())
-    nodes[nodeIndex] = graph[nodes[nodeIndex]][directions[directionIndex]];
-  directionIndex++;
-  if (directionIndex == directions.length) directionIndex = 0;
-  steps++;
+// console.log(nodes);
+
+const cycles = [];
+for (let node of nodes) {
+  // console.log(node);
+  const states = [];
+  const endStates = [];
+  let cycleState;
+  let steps = 0;
+  while (true) {
+    const directionIndex = steps % directions.length;
+    const state = JSON.stringify({ node, directionIndex });
+    if (states.includes(state)) {
+      cycleState = state;
+      break;
+    }
+    states.push(state);
+    if (node.endsWith("Z")) endStates.push(state);
+    node = graph[node][directions[directionIndex]];
+    steps++;
+  }
+  // // console.log(states);
+  // console.log(states.length);
+  // // console.log(endStates);
+  // console.log(endStates.map((endState) => states.indexOf(endState)));
+  // // console.log(cycleState);
+  // console.log(states.indexOf(cycleState));
+  // console.log();
+  cycles.push({
+    startOffset: states.indexOf(cycleState),
+    length: states.length - states.indexOf(cycleState),
+  });
 }
 
-console.log(steps);
+console.log(cycles);
+
+// console.log(
+//   cycles.reduce((cycleA, cycleB) => {
+//     console.log(cycleA.length);
+//     console.log(cycleB.length);
+//     let cycleCount = 1;
+//     while (
+//       (cycleA.length * cycleCount) % cycleB.length !==
+//       Math.abs(cycleA.startOffset - cycleB.startOffset)
+//     )
+//       cycleCount++;
+//     console.log(cycleCount);
+//     console.log();
+//     return {
+//       startOffset: 0,
+//       length: cycleA.length * cycleCount,
+//     };
+//   }).length
+// );

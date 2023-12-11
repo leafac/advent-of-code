@@ -194,25 +194,13 @@ for (let direction of ["north", "east", "south", "west"]) {
 
     coordinate =
       direction === "north"
-        ? (coordinate = {
-            x: coordinate.x,
-            y: coordinate.y - 1,
-          })
+        ? (coordinate = { x: coordinate.x, y: coordinate.y - 1 })
         : direction === "east"
-        ? (coordinate = {
-            x: coordinate.x + 1,
-            y: coordinate.y,
-          })
+        ? (coordinate = { x: coordinate.x + 1, y: coordinate.y })
         : direction === "south"
-        ? (coordinate = {
-            x: coordinate.x,
-            y: coordinate.y + 1,
-          })
+        ? (coordinate = { x: coordinate.x, y: coordinate.y + 1 })
         : direction === "west"
-        ? (coordinate = {
-            x: coordinate.x - 1,
-            y: coordinate.y,
-          })
+        ? (coordinate = { x: coordinate.x - 1, y: coordinate.y })
         : (() => {
             throw new Error();
           })();
@@ -277,34 +265,13 @@ for (const coordinatesToExplore of [
       continue;
     insideCoordinates.add(JSON.stringify(coordinate));
     coordinatesToExplore.push(
-      {
-        x: coordinate.x,
-        y: coordinate.y - 1,
-      },
-      {
-        x: coordinate.x + 1,
-        y: coordinate.y - 1,
-      },
-      {
-        x: coordinate.x + 1,
-        y: coordinate.y,
-      },
-      {
-        x: coordinate.x + 1,
-        y: coordinate.y + 1,
-      },
-      {
-        x: coordinate.x,
-        y: coordinate.y + 1,
-      },
-      {
-        x: coordinate.x - 1,
-        y: coordinate.y + 1,
-      },
-      {
-        x: coordinate.x - 1,
-        y: coordinate.y,
-      }
+      { x: coordinate.x, y: coordinate.y - 1 },
+      { x: coordinate.x + 1, y: coordinate.y - 1 },
+      { x: coordinate.x + 1, y: coordinate.y },
+      { x: coordinate.x + 1, y: coordinate.y + 1 },
+      { x: coordinate.x, y: coordinate.y + 1 },
+      { x: coordinate.x - 1, y: coordinate.y + 1 },
+      { x: coordinate.x - 1, y: coordinate.y }
     );
   }
   if (insideCoordinates !== undefined) break;

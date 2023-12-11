@@ -1,10 +1,10 @@
-// const input = `
-// .....
-// .S-7.
-// .|.|.
-// .L-J.
-// .....
-// `;
+const input = `
+.....
+.S-7.
+.|.|.
+.L-J.
+.....
+`;
 
 // const input = `
 // 7-F7-
@@ -14,17 +14,17 @@
 // LJ.LJ
 // `;
 
-const input = `
-...........
-.S-------7.
-.|F-----7|.
-.||.....||.
-.||.....||.
-.|L-7.F-J|.
-.|..|.|..|.
-.L--J.L--J.
-...........
-`;
+// const input = `
+// ...........
+// .S-------7.
+// .|F-----7|.
+// .||.....||.
+// .||.....||.
+// .|L-7.F-J|.
+// .|..|.|..|.
+// .L--J.L--J.
+// ...........
+// `;
 
 // const input = `
 // .7--77|.|-|77F|.J.|.FF.J-|7F--7F7.J----7FJ77J..F77-77-F.F|7-|F-.|F777FF7|-.-|-7|..FFL---L7-7FL7L-|-77.FL-7FF-7FJF|-7|7-FF|-|.J-FLJ7.F7.F7--L
@@ -191,59 +191,30 @@ for (let direction of ["north", "east", "south", "west"]) {
   let coordinate = startCoordinate;
   while (true) {
     coordinates.add(JSON.stringify(coordinate));
-    if (direction === "north") {
-      coordinate = {
-        x: coordinate.x,
-        y: coordinate.y - 1,
-      };
-      coordinatesToExploreOnRight.push({
-        x: coordinate.x + 1,
-        y: coordinate.y,
-      });
-      coordinatesToExploreOnLeft.push({
-        x: coordinate.x - 1,
-        y: coordinate.y,
-      });
-    } else if (direction === "east") {
-      coordinate = {
-        x: coordinate.x + 1,
-        y: coordinate.y,
-      };
-      coordinatesToExploreOnRight.push({
-        x: coordinate.x,
-        y: coordinate.y + 1,
-      });
-      coordinatesToExploreOnLeft.push({
-        x: coordinate.x,
-        y: coordinate.y - 1,
-      });
-    } else if (direction === "south") {
-      coordinate = {
-        x: coordinate.x,
-        y: coordinate.y + 1,
-      };
-      coordinatesToExploreOnRight.push({
-        x: coordinate.x - 1,
-        y: coordinate.y,
-      });
-      coordinatesToExploreOnLeft.push({
-        x: coordinate.x + 1,
-        y: coordinate.y,
-      });
-    } else if (direction === "west") {
-      coordinate = {
-        x: coordinate.x - 1,
-        y: coordinate.y,
-      };
-      coordinatesToExploreOnRight.push({
-        x: coordinate.x,
-        y: coordinate.y - 1,
-      });
-      coordinatesToExploreOnLeft.push({
-        x: coordinate.x,
-        y: coordinate.y + 1,
-      });
-    }
+    coordinate =
+      direction === "north"
+        ? (coordinate = {
+            x: coordinate.x,
+            y: coordinate.y - 1,
+          })
+        : direction === "east"
+        ? (coordinate = {
+            x: coordinate.x + 1,
+            y: coordinate.y,
+          })
+        : direction === "south"
+        ? (coordinate = {
+            x: coordinate.x,
+            y: coordinate.y + 1,
+          })
+        : direction === "west"
+        ? (coordinate = {
+            x: coordinate.x - 1,
+            y: coordinate.y,
+          })
+        : (() => {
+            throw new Error();
+          })();
 
     if (
       coordinate.x < 0 ||
@@ -279,12 +250,16 @@ for (let direction of ["north", "east", "south", "west"]) {
   }
 }
 
-let exploredCoordinates;
+console.log(largestLoop);
+console.log(Math.floor(largestLoop.coordinates.size / 2));
+
+let area;
 for (const coordinatesToExplore of [
   largestLoop.coordinatesToExploreOnRight,
   largestLoop.coordinatesToExploreOnLeft,
 ]) {
-  exploredCoordinates = new Set();
+  area = 0;
+  const exploredCoordinates = new Set();
   while (coordinatesToExplore.length > 0) {
     const coordinate = coordinatesToExplore.pop();
     if (
@@ -293,7 +268,7 @@ for (const coordinatesToExplore of [
       coordinate.y < 0 ||
       coordinate.y === grid.length
     ) {
-      exploredCoordinates = undefined;
+      area = undefined;
       break;
     }
     if (
@@ -309,10 +284,22 @@ for (const coordinatesToExplore of [
       },
       {
         x: coordinate.x + 1,
+        y: coordinate.y - 1,
+      },
+      {
+        x: coordinate.x + 1,
         y: coordinate.y,
       },
       {
+        x: coordinate.x + 1,
+        y: coordinate.y + 1,
+      },
+      {
         x: coordinate.x,
+        y: coordinate.y + 1,
+      },
+      {
+        x: coordinate.x - 1,
         y: coordinate.y + 1,
       },
       {
@@ -321,9 +308,7 @@ for (const coordinatesToExplore of [
       }
     );
   }
-  if (exploredCoordinates !== undefined) break;
+  if (area !== undefined) break;
 }
 
-console.log(Math.floor(largestLoop.coordinates.size / 2));
-// console.log(largestLoop);
-console.log(exploredCoordinates.size);
+console.log(area);

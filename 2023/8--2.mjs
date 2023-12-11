@@ -1,3 +1,5 @@
+import * as mathjs from "mathjs";
+
 // const input = `
 // LR
 
@@ -820,7 +822,7 @@ for (let node of nodes) {
   });
 }
 
-console.log(cycles);
+// console.log(cycles);
 
 // console.log(
 //   cycles.reduce((cycleA, cycleB) => {
@@ -840,3 +842,5 @@ console.log(cycles);
 //     };
 //   }).length
 // );
+
+console.log(mathjs.lcm(...cycles.map((cycle) => cycle.length)));

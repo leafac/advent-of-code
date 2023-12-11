@@ -191,7 +191,7 @@ for (let direction of ["north", "east", "south", "west"]) {
   let coordinate = startCoordinate;
   while (true) {
     coordinates.add(JSON.stringify(coordinate));
-    
+
     coordinate =
       direction === "north"
         ? (coordinate = {
@@ -276,6 +276,7 @@ for (const coordinatesToExplore of [
       exploredCoordinates.has(JSON.stringify(coordinate))
     )
       continue;
+    area++;
     exploredCoordinates.add(JSON.stringify(coordinate));
     coordinatesToExplore.push(
       {

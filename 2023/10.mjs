@@ -253,13 +253,12 @@ for (let direction of ["north", "east", "south", "west"]) {
 console.log(largestLoop);
 console.log(Math.floor(largestLoop.coordinates.size / 2));
 
-let area;
+let insideCoordinates;
 for (const coordinatesToExplore of [
   largestLoop.coordinatesToExploreOnRight,
   largestLoop.coordinatesToExploreOnLeft,
 ]) {
-  area = 0;
-  const exploredCoordinates = new Set();
+  insideCoordinates = new Set();
   while (coordinatesToExplore.length > 0) {
     const coordinate = coordinatesToExplore.pop();
     if (
@@ -268,16 +267,15 @@ for (const coordinatesToExplore of [
       coordinate.y < 0 ||
       coordinate.y === grid.length
     ) {
-      area = undefined;
+      insideCoordinates = undefined;
       break;
     }
     if (
       largestLoop.coordinates.has(JSON.stringify(coordinate)) ||
-      exploredCoordinates.has(JSON.stringify(coordinate))
+      insideCoordinates.has(JSON.stringify(coordinate))
     )
       continue;
-    area++;
-    exploredCoordinates.add(JSON.stringify(coordinate));
+    insideCoordinates.add(JSON.stringify(coordinate));
     coordinatesToExplore.push(
       {
         x: coordinate.x,
@@ -309,7 +307,8 @@ for (const coordinatesToExplore of [
       }
     );
   }
-  if (area !== undefined) break;
+  if (insideCoordinates !== undefined) break;
 }
 
-console.log(area);
+console.log(insideCoordinates);
+console.log(insideCoordinates.size);

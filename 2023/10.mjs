@@ -191,6 +191,7 @@ for (let direction of ["north", "east", "south", "west"]) {
   let coordinate = startCoordinate;
   while (true) {
     coordinates.add(JSON.stringify(coordinate));
+    
     coordinate =
       direction === "north"
         ? (coordinate = {
@@ -215,7 +216,6 @@ for (let direction of ["north", "east", "south", "west"]) {
         : (() => {
             throw new Error();
           })();
-
     if (
       coordinate.x < 0 ||
       coordinate.x === grid[0].length ||

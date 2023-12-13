@@ -1,5 +1,3 @@
-import workerpool from "workerpool";
-
 let input = `
 ..??#???##??#?? 4,2,2
 .#?????????.?. 9,1
@@ -1012,55 +1010,50 @@ let input = `
 // ?###???????? 3,2,1
 // `;
 
-const workers = workerpool.pool();
+// const workers = workerpool.pool();
+
+const cache = new Map();
 
 console.log(
-  (
-    await Promise.all(
-      input
-        .trim()
-        .split("\n")
-        .map((line, lineNumber) =>
-          workers.exec(
-            (line, lineNumber) => {
-              let [springs, sizesString] = line.split(" ");
-              console.log(JSON.stringify({ lineNumber, springs, sizesString }));
-              springs = new Array(5).fill(springs).join("?");
-              sizesString = new Array(5).fill(sizesString).join(",");
-              const sizes = sizesString.split(",").map((size) => Number(size));
-              const arrangements = traverse(springs, sizes, ".");
-              console.log(JSON.stringify({ lineNumber, arrangements }));
-              return arrangements;
-              function traverse(springs, sizes, previousSpring) {
-                return springs.length === 0
-                  ? sizes.length === 0 || (sizes.length === 1 && sizes[0] === 0)
-                    ? 1
-                    : 0
-                  : springs[0] === "?"
-                  ? traverse("." + springs.slice(1), sizes, previousSpring) +
-                    traverse("#" + springs.slice(1), sizes, previousSpring)
-                  : previousSpring === "." && springs[0] === "."
-                  ? traverse(springs.slice(1), sizes, springs[0])
-                  : springs[0] === "#"
-                  ? sizes.length > 0 && sizes[0] > 0
-                    ? traverse(
-                        springs.slice(1),
-                        [sizes[0] - 1, ...sizes.slice(1)],
-                        springs[0]
-                      )
-                    : 0
-                  : previousSpring === "#" && springs[0] === "."
-                  ? sizes.length > 0 && sizes[0] === 0
-                    ? traverse(springs.slice(1), sizes.slice(1), springs[0])
-                    : 0
-                  : 0;
-              }
-            },
-            [line, lineNumber]
-          )
-        )
-    )
-  ).reduce((a, b) => a + b)
+  input
+    .trim()
+    .split("\n")
+    .map((line) => {
+      let [springs, sizesString] = line.split(" ");
+      springs = new Array(5).fill(springs).join("?");
+      sizesString = new Array(5).fill(sizesString).join(",");
+      const sizes = sizesString.split(",").map((size) => Number(size));
+      const arrangements = traverse(springs, sizes, ".");
+      return arrangements;
+      function traverse(springs, sizes, previousSpring) {
+        const cacheKey = JSON.stringify([springs, sizes, previousSpring]);
+        if (cache.has(cacheKey)) return cache.get(cacheKey);
+        const arrangements =
+          springs.length === 0
+            ? sizes.length === 0 || (sizes.length === 1 && sizes[0] === 0)
+              ? 1
+              : 0
+            : springs[0] === "?"
+            ? traverse("." + springs.slice(1), sizes, previousSpring) +
+              traverse("#" + springs.slice(1), sizes, previousSpring)
+            : previousSpring === "." && springs[0] === "."
+            ? traverse(springs.slice(1), sizes, springs[0])
+            : springs[0] === "#"
+            ? sizes.length > 0 && sizes[0] > 0
+              ? traverse(
+                  springs.slice(1),
+                  [sizes[0] - 1, ...sizes.slice(1)],
+                  springs[0]
+                )
+              : 0
+            : previousSpring === "#" && springs[0] === "."
+            ? sizes.length > 0 && sizes[0] === 0
+              ? traverse(springs.slice(1), sizes.slice(1), springs[0])
+              : 0
+            : 0;
+        cache.set(cacheKey, arrangements);
+        return arrangements;
+      }
+    })
+    .reduce((a, b) => a + b)
 );
-
-workers.terminate();

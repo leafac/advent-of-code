@@ -277,7 +277,7 @@ while (statesToExplore.length > 0) {
           : 1,
       accumulatedHeatLoss,
     },
-  ]) {
+  ])
     if (
       0 <= nextStateToExplore.coordinate.x &&
       nextStateToExplore.coordinate.x < board[0].length &&
@@ -290,7 +290,6 @@ while (statesToExplore.length > 0) {
       nextStateToExplore.stepsInDirection <= maximumStepsInDirection
     )
       statesToExplore.push(nextStateToExplore);
-  }
   statesToExplore.sort(
     (stateToExploreA, stateToExploreB) =>
       stateToExploreB.accumulatedHeatLoss - stateToExploreA.accumulatedHeatLoss

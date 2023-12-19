@@ -840,7 +840,6 @@ const states = [
 while (states.length > 0) {
   const state = states.pop();
   if (
-    state === undefined ||
     state.workflow === "R" ||
     state.visitedWorkflows.has(state.workflow) ||
     Object.values(state.partsRange).some((range) => range.end <= range.start)

@@ -189,3 +189,19 @@ function reachablePlots(x, y, steps) {
 const plots = reachablePlots(startingCoordinate.x, startingCoordinate.y, 64);
 
 console.log(plots.size);
+
+let mapString = "";
+for (let y = 0; y < map.length; y++) {
+  for (let x = 0; x < map[0].length; x++)
+    mapString +=
+      map[y][x] === "#"
+        ? "#"
+        : [...plots].find((plotString) => {
+            const plot = JSON.parse(plotString);
+            return plot.x === x && plot.y === y;
+          }) !== undefined
+        ? "O"
+        : ".";
+  mapString += "\n";
+}
+console.log(mapString);

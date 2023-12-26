@@ -2,6 +2,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "mathjs": "^12.2.0",
+    "tsm": "^2.3.0",
     "workerpool": "^8.0.0"
   }
 }

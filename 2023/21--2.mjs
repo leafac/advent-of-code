@@ -154,8 +154,9 @@ const map = input
   .split("\n")
   .map((line) => line.split(""));
 
-let startingCoordinate;
+// console.log(map[0].length, map.length);
 
+let startingCoordinate;
 startingCoordinateSearch: for (const y of map.keys())
   for (const x of map[y].keys())
     if (map[y][x] === "S") {
@@ -272,8 +273,7 @@ for (let x = 0; x < map[0].length; x++)
     else odd++;
   }
 
-console.log(even);
-console.log(odd);
+console.log(even, odd);
 
 // const reachableParity = steps % 2;
 

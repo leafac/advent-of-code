@@ -132,19 +132,22 @@ let input = `
 ...................................................................................................................................
 `;
 
-input = `
-...........
-.....###.#.
-.###.##..#.
-..#.#...#..
-....#.#....
-.##..S####.
-.##..#...#.
-.......##..
-.##.#.####.
-.##..##.##.
-...........
-`;
+// input = `
+// ...........
+// .....###.#.
+// .###.##..#.
+// ..#.#...#..
+// ....#.#....
+// .##..S####.
+// .##..#...#.
+// .......##..
+// .##.#.####.
+// .##..##.##.
+// ...........
+// `;
+
+// const steps = 26501365;
+const steps = 64;
 
 const map = input
   .trim()
@@ -160,32 +163,152 @@ startingCoordinateSearch: for (const y of map.keys())
       break startingCoordinateSearch;
     }
 
-const reachablePlotsCache = new Map();
+// const reachableCoordinates = [];
+// for (let xOffset = 0; xOffset <= steps; xOffset++)
+//   for (let yOffset = 0; yOffset <= steps; yOffset++) {
+//     const distance = xOffset + yOffset;
+//     if (distance > steps || distance % 2 !== reachableParity) continue;
+//     if (
+//       map[startingCoordinate.y + yOffset][startingCoordinate.x + xOffset] !==
+//       "#"
+//     )
+//       reachableCoordinates.push(
+//         JSON.stringify({
+//           x: startingCoordinate.x + xOffset,
+//           y: startingCoordinate.y + yOffset,
+//         })
+//       );
+//     if (
+//       xOffset > 0 &&
+//       map[startingCoordinate.y + yOffset][startingCoordinate.x - xOffset] !==
+//         "#"
+//     )
+//       reachableCoordinates.push(
+//         JSON.stringify({
+//           x: startingCoordinate.x - xOffset,
+//           y: startingCoordinate.y + yOffset,
+//         })
+//       );
+//     if (
+//       yOffset > 0 &&
+//       map[startingCoordinate.y - yOffset][startingCoordinate.x + xOffset] !==
+//         "#"
+//     )
+//       reachableCoordinates.push(
+//         JSON.stringify({
+//           x: startingCoordinate.x + xOffset,
+//           y: startingCoordinate.y - yOffset,
+//         })
+//       );
+//     if (
+//       xOffset > 0 &&
+//       yOffset > 0 &&
+//       map[startingCoordinate.y - yOffset][startingCoordinate.x - xOffset] !==
+//         "#"
+//     )
+//       reachableCoordinates.push(
+//         JSON.stringify({
+//           x: startingCoordinate.x - xOffset,
+//           y: startingCoordinate.y - yOffset,
+//         })
+//       );
+//   }
 
-function reachablePlots(x, y, steps) {
-  if (map.at(y % map.length).at(x % map[0].length) === "#" || steps < 0)
-    return new Set();
-  const key = JSON.stringify({ x, y, steps });
-  const cached = reachablePlotsCache.get(key);
-  if (cached !== undefined) return cached;
-  const plots =
-    steps === 0
-      ? new Set([key])
-      : new Set([
-          ...reachablePlots(x, y - 1, steps - 1),
-          ...reachablePlots(x + 1, y, steps - 1),
-          ...reachablePlots(x, y + 1, steps - 1),
-          ...reachablePlots(x - 1, y, steps - 1),
-        ]);
-  reachablePlotsCache.set(key, plots);
-  return plots;
+// let mapString = "";
+// for (let y = 0; y < map.length; y++) {
+//   for (let x = 0; x < map[0].length; x++)
+//     mapString +=
+//       map[y][x] === "#"
+//         ? "#"
+//         : reachableCoordinates.includes(JSON.stringify({ x, y }))
+//         ? "O"
+//         : ".";
+//   mapString += "\n";
+// }
+// console.log(mapString);
+
+const worklist = [startingCoordinate];
+const coordinates = new Set();
+while (worklist.length > 0) {
+  const coordinate = worklist.pop();
+  const coordinateKey = JSON.stringify(coordinate);
+  if (
+    coordinates.has(coordinateKey) ||
+    coordinate.x < 0 ||
+    coordinate.x >= map[0].length ||
+    coordinate.y < 0 ||
+    coordinate.y >= map.length ||
+    map[coordinate.y][coordinate.x] === "#"
+  )
+    continue;
+  map[coordinate.y][coordinate.x] = "A";
+  coordinates.add(coordinateKey);
+  worklist.push(
+    { x: coordinate.x, y: coordinate.y - 1 },
+    { x: coordinate.x + 1, y: coordinate.y },
+    { x: coordinate.x, y: coordinate.y + 1 },
+    { x: coordinate.x - 1, y: coordinate.y }
+  );
 }
 
-const plots = reachablePlots(
-  startingCoordinate.x,
-  startingCoordinate.y,
-  // 26501365
-  5000
-);
+// console.log(
+//   map
+//     .map((line) =>
+//       line.map((character) => (character === "A" ? "." : "#")).join("")
+//     )
+//     .join("\n")
+// );
 
-console.log(plots.size);
+for (let x = 0; x < map[0].length; x++)
+  for (let y = 0; y < map.length; y++)
+    map[y][x] = map[y][x] === "A" ? "." : "#";
+
+let even = 0;
+let odd = 0;
+for (let x = 0; x < map[0].length; x++)
+  for (let y = 0; y < map.length; y++) {
+    if (map[y][x] === "#") continue;
+    if ((x + y) % 2 === 0) even++;
+    else odd++;
+  }
+
+console.log(even);
+console.log(odd);
+
+// const reachableParity = steps % 2;
+
+// let reachableCount = 0;
+// for (let xOffset = 0; xOffset <= steps; xOffset++)
+//   for (let yOffset = 0; yOffset <= steps; yOffset++) {
+//     const distance = xOffset + yOffset;
+//     if (distance > steps || distance % 2 !== reachableParity) continue;
+//     if (
+//       map
+//         .at((startingCoordinate.y + yOffset) % map.length)
+//         .at((startingCoordinate.x + xOffset) % map[0].length) === "A"
+//     )
+//       reachableCount++;
+//     if (
+//       xOffset > 0 &&
+//       map
+//         .at((startingCoordinate.y + yOffset) % map.length)
+//         .at((startingCoordinate.x - xOffset) % map[0].length) === "A"
+//     )
+//       reachableCount++;
+//     if (
+//       yOffset > 0 &&
+//       map
+//         .at((startingCoordinate.y - yOffset) % map.length)
+//         .at((startingCoordinate.x + xOffset) % map[0].length) === "A"
+//     )
+//       reachableCount++;
+//     if (
+//       xOffset > 0 &&
+//       yOffset > 0 &&
+//       map
+//         .at((startingCoordinate.y - yOffset) % map.length)
+//         .at((startingCoordinate.x - xOffset) % map[0].length) === "A"
+//     )
+//       reachableCount++;
+//   }
+// console.log(reachableCount);

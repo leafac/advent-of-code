@@ -222,4 +222,4 @@ while (worklist.length > 0) {
   );
 }
 
-console.log(hikeLengths.sort().at(-1));
+console.log(hikeLengths.sort((a, b) => b - a)[0]);

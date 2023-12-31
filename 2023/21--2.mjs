@@ -170,8 +170,9 @@ startingCoordinateSearch: for (const y of map.keys())
     }
 
 const plots = {
-  evenMap: { innerDiamond: 0, outerDiamond: 0 },
-  oddMap: { innerDiamond: 0, outerDiamond: 0 },
+  evenInnerDiamond: 0,
+  oddInnerDiamond: 0,
+  outerDiamond: 0,
 };
 const worklist = [startingCoordinate];
 while (worklist.length > 0) {
@@ -188,8 +189,12 @@ while (worklist.length > 0) {
   const distance =
     Math.abs(coordinate.x - startingCoordinate.x) +
     Math.abs(coordinate.y - startingCoordinate.y);
-  plots[distance % 2 === 1 ? "evenMap" : "oddMap"][
-    distance <= (map[0].length - 1) / 2 ? "innerDiamond" : "outerDiamond"
+  plots[
+    distance <= (map[0].length - 1) / 2
+      ? distance % 2 === 1
+        ? "evenInnerDiamond"
+        : "oddInnerDiamond"
+      : "outerDiamond"
   ]++;
   worklist.push(
     { x: coordinate.x, y: coordinate.y - 1 },
@@ -199,30 +204,15 @@ while (worklist.length > 0) {
   );
 }
 
-const mapsSize = (1 + steps * 2) / map[0].length;
-let innerDiamondEvens = 1;
-let innerDiamondOdds = 0;
-let innerDiamondAddToOdds = true;
-let innerDiamondSideIncrement = 2;
-let outerDiamonds = 0;
-let outerDiamondsSideIncrement = 1;
-for (
-  let currentMapsSize = 1;
-  currentMapsSize !== mapsSize;
-  currentMapsSize += 2
-) {
-  const increment = (innerDiamondSideIncrement - 1) * 4;
-  if (innerDiamondAddToOdds) innerDiamondOdds += increment;
-  else innerDiamondEvens += increment;
-  innerDiamondAddToOdds = !innerDiamondAddToOdds;
-  innerDiamondSideIncrement++;
-  outerDiamonds += outerDiamondsSideIncrement * 2;
-  outerDiamondsSideIncrement++;
+let sum = plots.evenInnerDiamond;
+let innerDiamond = "oddInnerDiamond";
+let currentMapsSize = 1;
+while (currentMapsSize !== (1 + steps * 2) / map[0].length) {
+  currentMapsSize += 2;
+  sum +=
+    (currentMapsSize - 1) * 2 * plots[innerDiamond] +
+    (currentMapsSize - 1) * plots.outerDiamond;
+  innerDiamond =
+    innerDiamond === "oddInnerDiamond" ? "evenInnerDiamond" : "oddInnerDiamond";
 }
-
-console.log(
-  plots.evenMap.innerDiamond * innerDiamondEvens +
-    plots.evenMap.outerDiamond * outerDiamonds +
-    plots.oddMap.innerDiamond * innerDiamondOdds +
-    plots.oddMap.outerDiamond * outerDiamonds
-);
+console.log(sum);

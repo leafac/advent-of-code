@@ -146,15 +146,20 @@ let input = `
 // ...........
 // `;
 
-// const steps = 26501365;
-const steps = 64;
+// input = `
+// .....
+// .....
+// ..S..
+// .....
+// .....
+// `;
+
+const steps = 26501365;
 
 const map = input
   .trim()
   .split("\n")
   .map((line) => line.split(""));
-
-// console.log(map[0].length, map.length);
 
 let startingCoordinate;
 startingCoordinateSearch: for (const y of map.keys())
@@ -164,86 +169,28 @@ startingCoordinateSearch: for (const y of map.keys())
       break startingCoordinateSearch;
     }
 
-// const reachableCoordinates = [];
-// for (let xOffset = 0; xOffset <= steps; xOffset++)
-//   for (let yOffset = 0; yOffset <= steps; yOffset++) {
-//     const distance = xOffset + yOffset;
-//     if (distance > steps || distance % 2 !== reachableParity) continue;
-//     if (
-//       map[startingCoordinate.y + yOffset][startingCoordinate.x + xOffset] !==
-//       "#"
-//     )
-//       reachableCoordinates.push(
-//         JSON.stringify({
-//           x: startingCoordinate.x + xOffset,
-//           y: startingCoordinate.y + yOffset,
-//         })
-//       );
-//     if (
-//       xOffset > 0 &&
-//       map[startingCoordinate.y + yOffset][startingCoordinate.x - xOffset] !==
-//         "#"
-//     )
-//       reachableCoordinates.push(
-//         JSON.stringify({
-//           x: startingCoordinate.x - xOffset,
-//           y: startingCoordinate.y + yOffset,
-//         })
-//       );
-//     if (
-//       yOffset > 0 &&
-//       map[startingCoordinate.y - yOffset][startingCoordinate.x + xOffset] !==
-//         "#"
-//     )
-//       reachableCoordinates.push(
-//         JSON.stringify({
-//           x: startingCoordinate.x + xOffset,
-//           y: startingCoordinate.y - yOffset,
-//         })
-//       );
-//     if (
-//       xOffset > 0 &&
-//       yOffset > 0 &&
-//       map[startingCoordinate.y - yOffset][startingCoordinate.x - xOffset] !==
-//         "#"
-//     )
-//       reachableCoordinates.push(
-//         JSON.stringify({
-//           x: startingCoordinate.x - xOffset,
-//           y: startingCoordinate.y - yOffset,
-//         })
-//       );
-//   }
-
-// let mapString = "";
-// for (let y = 0; y < map.length; y++) {
-//   for (let x = 0; x < map[0].length; x++)
-//     mapString +=
-//       map[y][x] === "#"
-//         ? "#"
-//         : reachableCoordinates.includes(JSON.stringify({ x, y }))
-//         ? "O"
-//         : ".";
-//   mapString += "\n";
-// }
-// console.log(mapString);
-
+const plots = {
+  evenMap: { innerDiamond: 0, outerDiamond: 0 },
+  oddMap: { innerDiamond: 0, outerDiamond: 0 },
+};
 const worklist = [startingCoordinate];
-const coordinates = new Set();
 while (worklist.length > 0) {
   const coordinate = worklist.pop();
-  const coordinateKey = JSON.stringify(coordinate);
   if (
-    coordinates.has(coordinateKey) ||
     coordinate.x < 0 ||
-    coordinate.x >= map[0].length ||
+    map[0].length <= coordinate.x ||
     coordinate.y < 0 ||
-    coordinate.y >= map.length ||
-    map[coordinate.y][coordinate.x] === "#"
+    map.length <= coordinate.y ||
+    ["#", "V"].includes(map[coordinate.y][coordinate.x])
   )
     continue;
-  map[coordinate.y][coordinate.x] = "A";
-  coordinates.add(coordinateKey);
+  map[coordinate.y][coordinate.x] = "V";
+  const distance =
+    Math.abs(coordinate.x - startingCoordinate.x) +
+    Math.abs(coordinate.y - startingCoordinate.y);
+  plots[distance % 2 === 1 ? "evenMap" : "oddMap"][
+    distance <= (map[0].length - 1) / 2 ? "innerDiamond" : "outerDiamond"
+  ]++;
   worklist.push(
     { x: coordinate.x, y: coordinate.y - 1 },
     { x: coordinate.x + 1, y: coordinate.y },
@@ -252,63 +199,30 @@ while (worklist.length > 0) {
   );
 }
 
-// console.log(
-//   map
-//     .map((line) =>
-//       line.map((character) => (character === "A" ? "." : "#")).join("")
-//     )
-//     .join("\n")
-// );
+const mapsSize = (1 + steps * 2) / map[0].length;
+let innerDiamondEvens = 1;
+let innerDiamondOdds = 0;
+let innerDiamondAddToOdds = true;
+let innerDiamondSideIncrement = 2;
+let outerDiamonds = 0;
+let outerDiamondsSideIncrement = 1;
+for (
+  let currentMapsSize = 1;
+  currentMapsSize !== mapsSize;
+  currentMapsSize += 2
+) {
+  const increment = (innerDiamondSideIncrement - 1) * 4;
+  if (innerDiamondAddToOdds) innerDiamondOdds += increment;
+  else innerDiamondEvens += increment;
+  innerDiamondAddToOdds = !innerDiamondAddToOdds;
+  innerDiamondSideIncrement++;
+  outerDiamonds += outerDiamondsSideIncrement * 2;
+  outerDiamondsSideIncrement++;
+}
 
-for (let x = 0; x < map[0].length; x++)
-  for (let y = 0; y < map.length; y++)
-    map[y][x] = map[y][x] === "A" ? "." : "#";
-
-let even = 0;
-let odd = 0;
-for (let x = 0; x < map[0].length; x++)
-  for (let y = 0; y < map.length; y++) {
-    if (map[y][x] === "#") continue;
-    if ((x + y) % 2 === 0) even++;
-    else odd++;
-  }
-
-console.log(even, odd);
-
-// const reachableParity = steps % 2;
-
-// let reachableCount = 0;
-// for (let xOffset = 0; xOffset <= steps; xOffset++)
-//   for (let yOffset = 0; yOffset <= steps; yOffset++) {
-//     const distance = xOffset + yOffset;
-//     if (distance > steps || distance % 2 !== reachableParity) continue;
-//     if (
-//       map
-//         .at((startingCoordinate.y + yOffset) % map.length)
-//         .at((startingCoordinate.x + xOffset) % map[0].length) === "A"
-//     )
-//       reachableCount++;
-//     if (
-//       xOffset > 0 &&
-//       map
-//         .at((startingCoordinate.y + yOffset) % map.length)
-//         .at((startingCoordinate.x - xOffset) % map[0].length) === "A"
-//     )
-//       reachableCount++;
-//     if (
-//       yOffset > 0 &&
-//       map
-//         .at((startingCoordinate.y - yOffset) % map.length)
-//         .at((startingCoordinate.x + xOffset) % map[0].length) === "A"
-//     )
-//       reachableCount++;
-//     if (
-//       xOffset > 0 &&
-//       yOffset > 0 &&
-//       map
-//         .at((startingCoordinate.y - yOffset) % map.length)
-//         .at((startingCoordinate.x - xOffset) % map[0].length) === "A"
-//     )
-//       reachableCount++;
-//   }
-// console.log(reachableCount);
+console.log(
+  plots.evenMap.innerDiamond * innerDiamondEvens +
+    plots.evenMap.outerDiamond * outerDiamonds +
+    plots.oddMap.innerDiamond * innerDiamondOdds +
+    plots.oddMap.outerDiamond * outerDiamonds
+);

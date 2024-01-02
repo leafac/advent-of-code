@@ -1,4 +1,7 @@
-import util from "node:util";
+// https://www.desmos.com/calculator/6xm7ol24md
+// https://www.desmos.com/calculator/ljrhwermvw
+// https://www.desmos.com/calculator/gn4iu1gl4s
+// https://www.desmos.com/3d/5b7cf02b08
 
 let input = `
 156689809620606, 243565579389165, 455137247320393 @ -26, 48, -140
@@ -303,18 +306,16 @@ let input = `
 332093400642358, 273183926405235, 220894804744871 @ -22, 51, 43
 `;
 
-// input = `
-// 19, 13, 30 @ -2,  1, -2
-// 18, 19, 22 @ -1, -1, -2
-// 20, 25, 34 @ -2, -2, -4
-// 12, 31, 28 @ -1, -2, -1
-// 20, 19, 15 @  1, -5, -3
-// `;
+input = `
+19, 13, 30 @ -2,  1, -2
+18, 19, 22 @ -1, -1, -2
+20, 25, 34 @ -2, -2, -4
+12, 31, 28 @ -1, -2, -1
+20, 19, 15 @  1, -5, -3
+`;
 
 // input = `
 // 19, 13, 30 @ -2,  1, -2
-// 18, 19, 22 @ -1, -1, -2
-// 20, 25, 34 @ -2, -2, -4
 // `;
 
 const hailstones = input
@@ -333,139 +334,79 @@ const hailstones = input
     };
   });
 
-const constraintses = {
-  x: { positive: [], negative: [] },
-  y: { positive: [], negative: [] },
-  z: { positive: [], negative: [] },
-};
+let possibleRocks = [
+  {
+    position: {
+      x: { from: -Infinity, to: Infinity },
+      y: { from: -Infinity, to: Infinity },
+      z: { from: -Infinity, to: Infinity },
+    },
+    velocity: {
+      x: { from: -Infinity, to: Infinity },
+      y: { from: -Infinity, to: Infinity },
+      z: { from: -Infinity, to: Infinity },
+    },
+  },
+];
 
 for (const axis of ["x", "y", "z"])
-  for (
-    let hailstoneAIndex = 0;
-    hailstoneAIndex < hailstones.length;
-    hailstoneAIndex++
-  ) {
-    const hailstoneA = hailstones[hailstoneAIndex];
-    for (
-      let hailstoneBIndex = hailstoneAIndex + 1;
-      hailstoneBIndex < hailstones.length;
-      hailstoneBIndex++
-    ) {
-      const hailstoneB = hailstones[hailstoneBIndex];
-      const intersectionTime =
-        (hailstoneB.position[axis] - hailstoneA.position[axis]) /
-        (hailstoneA.velocity[axis] - hailstoneB.velocity[axis]);
-      if (intersectionTime < 0 || intersectionTime === Infinity) {
-        if (hailstoneA.position[axis] < hailstoneB.position[axis]) {
-          constraintses[axis].positive.push({
-            before: hailstoneA,
-            after: hailstoneB,
-            times: { start: 0, end: Infinity },
-          });
-          constraintses[axis].negative.push({
-            before: hailstoneB,
-            after: hailstoneA,
-            times: { start: 0, end: Infinity },
-          });
-        } else {
-          constraintses[axis].positive.push({
-            before: hailstoneB,
-            after: hailstoneA,
-            times: { start: 0, end: Infinity },
-          });
-          constraintses[axis].negative.push({
-            before: hailstoneA,
-            after: hailstoneB,
-            times: { start: 0, end: Infinity },
-          });
-        }
-      } else {
-        if (hailstoneA.position[axis] < hailstoneB.position[axis]) {
-          constraintses[axis].positive.push({
-            before: hailstoneA,
-            after: hailstoneB,
-            times: { start: 0, end: intersectionTime },
-          });
-          constraintses[axis].negative.push({
-            before: hailstoneB,
-            after: hailstoneA,
-            times: { start: 0, end: intersectionTime },
-          });
-          constraintses[axis].positive.push({
-            before: hailstoneB,
-            after: hailstoneA,
-            times: { start: intersectionTime, end: Infinity },
-          });
-          constraintses[axis].negative.push({
-            before: hailstoneA,
-            after: hailstoneB,
-            times: { start: intersectionTime, end: Infinity },
-          });
-        } else {
-          constraintses[axis].positive.push({
-            before: hailstoneB,
-            after: hailstoneA,
-            times: { start: 0, end: intersectionTime },
-          });
-          constraintses[axis].negative.push({
-            before: hailstoneA,
-            after: hailstoneB,
-            times: { start: 0, end: intersectionTime },
-          });
-          constraintses[axis].positive.push({
-            before: hailstoneA,
-            after: hailstoneB,
-            times: { start: intersectionTime, end: Infinity },
-          });
-          constraintses[axis].negative.push({
-            before: hailstoneB,
-            after: hailstoneA,
-            times: { start: intersectionTime, end: Infinity },
-          });
-        }
-      }
-    }
+  for (const hailstone of hailstones) {
+    const nextPossibleRocks = [];
+    for (const possibleRock of possibleRocks)
+      for (const nextPossibleRock of [
+        {
+          position: {
+            ...possibleRock.position,
+            [axis]: {
+              ...possibleRock.position[axis],
+              to: Math.min(
+                possibleRock.position[axis].to,
+                hailstone.position[axis] - 1
+              ),
+            },
+          },
+          velocity: {
+            ...possibleRock.velocity,
+            [axis]: {
+              ...possibleRock.velocity[axis],
+              from: Math.max(
+                possibleRock.velocity[axis].from,
+                hailstone.velocity[axis] + 1
+              ),
+            },
+          },
+        },
+        {
+          position: {
+            ...possibleRock.position,
+            [axis]: {
+              ...possibleRock.position[axis],
+              from: Math.max(
+                possibleRock.position[axis].from,
+                hailstone.position[axis] + 1
+              ),
+            },
+          },
+          velocity: {
+            ...possibleRock.velocity,
+            [axis]: {
+              ...possibleRock.velocity[axis],
+              to: Math.min(
+                possibleRock.velocity[axis].to,
+                hailstone.velocity[axis] - 1
+              ),
+            },
+          },
+        },
+      ])
+        if (
+          nextPossibleRock.position[axis].from <=
+            nextPossibleRock.position[axis].to &&
+          nextPossibleRock.velocity[axis].from <=
+            nextPossibleRock.velocity[axis].to
+        )
+          nextPossibleRocks.push(nextPossibleRock);
+    possibleRocks = nextPossibleRocks;
   }
 
-for (const axis of ["x", "y", "z"])
-  for (const direction of ["positive", "negative"]) {
-    const constraints = constraintses[axis][direction];
-    let newConstraints;
-    do {
-      newConstraints = false;
-      for (
-        let constraintAIndex = 0;
-        constraintAIndex < constraints.length;
-        constraintAIndex++
-      ) {
-        const constraintA = constraints[constraintAIndex];
-        for (
-          let constraintBIndex = constraintAIndex + 1;
-          constraintBIndex < constraints.length;
-          constraintBIndex++
-        ) {
-          const constraintB = constraints[constraintBIndex];
-          const start = Math.max(
-            constraintA.times.start,
-            constraintB.times.start
-          );
-          const end = Math.min(constraintA.times.end, constraintB.times.end);
-          const constraint = {
-            before: constraintA.before,
-            after: constraintB.after,
-            times: { start, end },
-          };
-          if (
-            constraintA.after === constraintB.before &&
-            start <= end &&
-            constraints.find((existingConstraint) =>
-              util.isDeepStrictEqual(constraint, existingConstraint)
-            ) === undefined
-          ) {
-            constraints.push(constraint);
-            newConstraints = true;
-          }
-        }
-      }
-    } while (newConstraints);
-  }
+console.dir(possibleRocks, { depth: null });

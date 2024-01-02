@@ -1,3 +1,5 @@
+import util from "node:util";
+
 let input = `
 156689809620606, 243565579389165, 455137247320393 @ -26, 48, -140
 106355761063908, 459832650718033, 351953299411025 @ 73, -206, -52
@@ -312,6 +314,7 @@ input = `
 input = `
 19, 13, 30 @ -2,  1, -2
 18, 19, 22 @ -1, -1, -2
+20, 25, 34 @ -2, -2, -4
 `;
 
 const hailstones = input
@@ -330,7 +333,7 @@ const hailstones = input
     };
   });
 
-const constraints = {
+const constraintses = {
   x: { positive: [], negative: [] },
   y: { positive: [], negative: [] },
   z: { positive: [], negative: [] },
@@ -354,23 +357,23 @@ for (const axis of ["x", "y", "z"])
         (hailstoneA.velocity[axis] - hailstoneB.velocity[axis]);
       if (intersectionTime < 0 || intersectionTime === Infinity) {
         if (hailstoneA.position[axis] < hailstoneB.position[axis]) {
-          constraints[axis].positive.push({
+          constraintses[axis].positive.push({
             before: hailstoneA,
             after: hailstoneB,
             times: { start: 0, end: Infinity },
           });
-          constraints[axis].negative.push({
+          constraintses[axis].negative.push({
             before: hailstoneB,
             after: hailstoneA,
             times: { start: 0, end: Infinity },
           });
         } else {
-          constraints[axis].positive.push({
+          constraintses[axis].positive.push({
             before: hailstoneB,
             after: hailstoneA,
             times: { start: 0, end: Infinity },
           });
-          constraints[axis].negative.push({
+          constraintses[axis].negative.push({
             before: hailstoneA,
             after: hailstoneB,
             times: { start: 0, end: Infinity },
@@ -378,43 +381,43 @@ for (const axis of ["x", "y", "z"])
         }
       } else {
         if (hailstoneA.position[axis] < hailstoneB.position[axis]) {
-          constraints[axis].positive.push({
+          constraintses[axis].positive.push({
             before: hailstoneA,
             after: hailstoneB,
             times: { start: 0, end: intersectionTime },
           });
-          constraints[axis].negative.push({
+          constraintses[axis].negative.push({
             before: hailstoneB,
             after: hailstoneA,
             times: { start: 0, end: intersectionTime },
           });
-          constraints[axis].positive.push({
+          constraintses[axis].positive.push({
             before: hailstoneB,
             after: hailstoneA,
             times: { start: intersectionTime, end: Infinity },
           });
-          constraints[axis].negative.push({
+          constraintses[axis].negative.push({
             before: hailstoneA,
             after: hailstoneB,
             times: { start: intersectionTime, end: Infinity },
           });
         } else {
-          constraints[axis].positive.push({
+          constraintses[axis].positive.push({
             before: hailstoneB,
             after: hailstoneA,
             times: { start: 0, end: intersectionTime },
           });
-          constraints[axis].negative.push({
+          constraintses[axis].negative.push({
             before: hailstoneA,
             after: hailstoneB,
             times: { start: 0, end: intersectionTime },
           });
-          constraints[axis].positive.push({
+          constraintses[axis].positive.push({
             before: hailstoneA,
             after: hailstoneB,
             times: { start: intersectionTime, end: Infinity },
           });
-          constraints[axis].negative.push({
+          constraintses[axis].negative.push({
             before: hailstoneB,
             after: hailstoneA,
             times: { start: intersectionTime, end: Infinity },
@@ -423,3 +426,48 @@ for (const axis of ["x", "y", "z"])
       }
     }
   }
+
+for (const axis of ["x", "y", "z"])
+  for (const direction of ["positive", "negative"]) {
+    const constraints = constraintses[axis][direction];
+    let newConstraints;
+    do {
+      newConstraints = false;
+      for (
+        let constraintAIndex = 0;
+        constraintAIndex < constraints.length;
+        constraintAIndex++
+      ) {
+        const constraintA = constraints[constraintAIndex];
+        for (
+          let constraintBIndex = constraintAIndex + 1;
+          constraintBIndex < constraints.length;
+          constraintBIndex++
+        ) {
+          const constraintB = constraints[constraintBIndex];
+          const start = Math.max(
+            constraintA.times.start,
+            constraintB.times.start
+          );
+          const end = Math.min(constraintA.times.end, constraintB.times.end);
+          const constraint = {
+            before: constraintA.before,
+            after: constraintB.after,
+            times: { start, end },
+          };
+          if (
+            constraintA.after === constraintB.before &&
+            start <= end &&
+            constraints.find((existingConstraint) =>
+              util.isDeepStrictEqual(constraint, existingConstraint)
+            ) === undefined
+          ) {
+            constraints.push(constraint);
+            newConstraints = true;
+          }
+        }
+      }
+    } while (newConstraints);
+  }
+
+console.dir(constraintses.x.positive, { depth: null });

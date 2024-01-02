@@ -309,31 +309,34 @@ input = `
 20, 19, 15 @  1, -5, -3
 `;
 
-// input = `
-// 19, 13, 30 @ -2,  1, -2
-// 18, 19, 22 @ -1, -1, -2
-// `;
+input = `
+19, 13, 30 @ -2,  1, -2
+18, 19, 22 @ -1, -1, -2
+`;
 
 const hailstones = input
   .trim()
   .split("\n")
   .map((line) => {
-    const [position, velocity] = line.split("@");
-    const [positionX, positionY, positionZ] = position
-      .split(",")
-      .map((number) => Number(number.trim()));
-    const [velocityX, velocityY, velocityZ] = velocity
-      .split(",")
-      .map((number) => Number(number.trim()));
+    const [
+      [positionX, positionY, positionZ],
+      [velocityX, velocityY, velocityZ],
+    ] = line
+      .split("@")
+      .map((section) => section.split(",").map((element) => Number(element)));
     return {
       position: { x: positionX, y: positionY, z: positionZ },
       velocity: { x: velocityX, y: velocityY, z: velocityZ },
     };
   });
 
-const axises = ["x", "y", "z"];
-let times = [0, Infinity];
-for (const axis of axises)
+const constraints = {
+  x: { positive: [], negative: [] },
+  y: { positive: [], negative: [] },
+  z: { positive: [], negative: [] },
+};
+
+for (const axis of ["x", "y", "z"])
   for (
     let hailstoneAIndex = 0;
     hailstoneAIndex < hailstones.length;
@@ -346,58 +349,77 @@ for (const axis of axises)
       hailstoneBIndex++
     ) {
       const hailstoneB = hailstones[hailstoneBIndex];
-      if (hailstoneA.velocity[axis] === hailstoneB.velocity[axis]) continue;
-      const intersection =
+      const intersectionTime =
         (hailstoneB.position[axis] - hailstoneA.position[axis]) /
         (hailstoneA.velocity[axis] - hailstoneB.velocity[axis]);
-      if (intersection > 0) times.push(intersection);
+      if (intersectionTime < 0 || intersectionTime === Infinity) {
+        if (hailstoneA.position[axis] < hailstoneB.position[axis]) {
+          constraints[axis].positive.push({
+            before: hailstoneA,
+            after: hailstoneB,
+            times: { start: 0, end: Infinity },
+          });
+          constraints[axis].negative.push({
+            before: hailstoneB,
+            after: hailstoneA,
+            times: { start: 0, end: Infinity },
+          });
+        } else {
+          constraints[axis].positive.push({
+            before: hailstoneB,
+            after: hailstoneA,
+            times: { start: 0, end: Infinity },
+          });
+          constraints[axis].negative.push({
+            before: hailstoneA,
+            after: hailstoneB,
+            times: { start: 0, end: Infinity },
+          });
+        }
+      } else {
+        if (hailstoneA.position[axis] < hailstoneB.position[axis]) {
+          constraints[axis].positive.push({
+            before: hailstoneA,
+            after: hailstoneB,
+            times: { start: 0, end: intersectionTime },
+          });
+          constraints[axis].negative.push({
+            before: hailstoneB,
+            after: hailstoneA,
+            times: { start: 0, end: intersectionTime },
+          });
+          constraints[axis].positive.push({
+            before: hailstoneB,
+            after: hailstoneA,
+            times: { start: intersectionTime, end: Infinity },
+          });
+          constraints[axis].negative.push({
+            before: hailstoneA,
+            after: hailstoneB,
+            times: { start: intersectionTime, end: Infinity },
+          });
+        } else {
+          constraints[axis].positive.push({
+            before: hailstoneB,
+            after: hailstoneA,
+            times: { start: 0, end: intersectionTime },
+          });
+          constraints[axis].negative.push({
+            before: hailstoneA,
+            after: hailstoneB,
+            times: { start: 0, end: intersectionTime },
+          });
+          constraints[axis].positive.push({
+            before: hailstoneA,
+            after: hailstoneB,
+            times: { start: intersectionTime, end: Infinity },
+          });
+          constraints[axis].negative.push({
+            before: hailstoneB,
+            after: hailstoneA,
+            times: { start: intersectionTime, end: Infinity },
+          });
+        }
+      }
     }
   }
-times = [...new Set(times)].sort((a, b) => a - b);
-
-const orders = [];
-for (let timeIndex = 0; timeIndex < times.length - 1; timeIndex++) {
-  const from = times[timeIndex];
-  const to = times[timeIndex + 1];
-  orders.push({
-    from,
-    to,
-    hailstones: Object.fromEntries(
-      axises.map((axis) => [
-        axis,
-        hailstones
-          .map((hailstone) => ({
-            hailstone,
-            [axis]:
-              hailstone.velocity[axis] *
-                (to === Infinity ? from + 1 : (to - from) / 2) +
-              hailstone.position[axis],
-          }))
-          .sort((entryA, entryB) => entryA[axis] - entryB[axis])
-          .map(({ hailstone }) => hailstone),
-      ])
-    ),
-  });
-}
-
-// let hits;
-// const worklist = [
-//   { hailstones: new Set(hailstones), orders: [...orders], hits: [] },
-// ];
-// while (worklist.length > 0) {
-//   const state = worklist.pop();
-//   if (state.hailstones.size === 0) {
-//     hits = state.hits;
-//     break;
-//   }
-//   for (const hailstone of state.hailstones) {
-//     const hailstones = new Set(state.hailstones);
-//     hailstones.delete(hailstone);
-//     worklist.push({
-//       hailstones,
-//       orders,
-//       hits: [...state.hits, { hailstone, from: orders[0].from }],
-//     });
-//   }
-// }
-// console.log(hits);

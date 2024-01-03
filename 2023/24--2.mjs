@@ -337,5 +337,3 @@ const hailstones = input
       velocity: { x: velocityX, y: velocityY, z: velocityZ },
     };
   });
-
-console.log(hailstones);

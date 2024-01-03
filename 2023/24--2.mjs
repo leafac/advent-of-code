@@ -1,3 +1,5 @@
+import lodash from "lodash";
+
 // https://www.desmos.com/calculator/6xm7ol24md
 // https://www.desmos.com/calculator/ljrhwermvw
 // https://www.desmos.com/calculator/gn4iu1gl4s
@@ -327,86 +329,13 @@ const hailstones = input
       [velocityX, velocityY, velocityZ],
     ] = line
       .split("@")
-      .map((section) => section.split(",").map((element) => Number(element)));
+      .map((section) =>
+        section.split(",").map((element) => Number(element.trim()))
+      );
     return {
       position: { x: positionX, y: positionY, z: positionZ },
       velocity: { x: velocityX, y: velocityY, z: velocityZ },
     };
   });
 
-let possibleRocks = [
-  {
-    position: {
-      x: { from: -Infinity, to: Infinity },
-      y: { from: -Infinity, to: Infinity },
-      z: { from: -Infinity, to: Infinity },
-    },
-    velocity: {
-      x: { from: -Infinity, to: Infinity },
-      y: { from: -Infinity, to: Infinity },
-      z: { from: -Infinity, to: Infinity },
-    },
-  },
-];
-
-for (const axis of ["x", "y", "z"])
-  for (const hailstone of hailstones) {
-    const nextPossibleRocks = [];
-    for (const possibleRock of possibleRocks)
-      for (const nextPossibleRock of [
-        {
-          position: {
-            ...possibleRock.position,
-            [axis]: {
-              ...possibleRock.position[axis],
-              to: Math.min(
-                possibleRock.position[axis].to,
-                hailstone.position[axis] - 1
-              ),
-            },
-          },
-          velocity: {
-            ...possibleRock.velocity,
-            [axis]: {
-              ...possibleRock.velocity[axis],
-              from: Math.max(
-                possibleRock.velocity[axis].from,
-                hailstone.velocity[axis] + 1
-              ),
-            },
-          },
-        },
-        {
-          position: {
-            ...possibleRock.position,
-            [axis]: {
-              ...possibleRock.position[axis],
-              from: Math.max(
-                possibleRock.position[axis].from,
-                hailstone.position[axis] + 1
-              ),
-            },
-          },
-          velocity: {
-            ...possibleRock.velocity,
-            [axis]: {
-              ...possibleRock.velocity[axis],
-              to: Math.min(
-                possibleRock.velocity[axis].to,
-                hailstone.velocity[axis] - 1
-              ),
-            },
-          },
-        },
-      ])
-        if (
-          nextPossibleRock.position[axis].from <=
-            nextPossibleRock.position[axis].to &&
-          nextPossibleRock.velocity[axis].from <=
-            nextPossibleRock.velocity[axis].to
-        )
-          nextPossibleRocks.push(nextPossibleRock);
-    possibleRocks = nextPossibleRocks;
-  }
-
-console.dir(possibleRocks, { depth: null });
+console.log(hailstones);

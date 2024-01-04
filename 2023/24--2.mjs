@@ -1,5 +1,3 @@
-import lodash from "lodash";
-
 // https://www.desmos.com/calculator/6xm7ol24md
 // https://www.desmos.com/calculator/ljrhwermvw
 // https://www.desmos.com/calculator/gn4iu1gl4s
@@ -316,9 +314,9 @@ input = `
 20, 19, 15 @  1, -5, -3
 `;
 
-// input = `
-// 19, 13, 30 @ -2,  1, -2
-// `;
+input = `
+19, 13, 30 @ -2,  1, -2
+`;
 
 const hailstones = input
   .trim()

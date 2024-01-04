@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@radically-straightforward/utilities": "^0.0.1",
     "@viz-js/viz": "^3.2.3",
     "lodash": "^4.17.21",
     "mathjs": "^12.2.0",

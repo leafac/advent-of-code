@@ -1,3 +1,8 @@
+import fs from "node:fs/promises";
+import { intern as $ } from "@radically-straightforward/utilities";
+import * as viz from "@viz-js/viz";
+const graphviz = await viz.instance();
+
 let input = `
 #.###########################################################################################################################################
 #...#...#...#.........###.....###...#.........#.....#...###.....#.....#...#.............#.....#.......#.........#...#...###...#...###...#...#
@@ -173,53 +178,89 @@ const map = input
   .split("\n")
   .map((line) => line.split(""));
 
+const start = $({ x: 1, y: 0 });
+const end = $({ x: map[0].length - 2, y: map.length - 1 });
+const nodes = new Set([start]);
+const edges = new Set();
 const worklist = [
   {
-    position: { x: 1, y: 0 },
-    direction: undefined,
-    visitedPositions: new Set(),
+    coordinate: start,
+    previousCoordinate: undefined,
+    previousJunction: start,
+    steps: 0,
   },
 ];
-const hikeLengths = [];
+const visitedCoordinates = new Set();
 while (worklist.length > 0) {
   const state = worklist.pop();
-  const positionKey = JSON.stringify(state.position);
-  if (
-    state.position.x < 0 ||
-    state.position.x >= map[0].length ||
-    state.position.y < 0 ||
-    state.position.y >= map.length ||
-    state.visitedPositions.has(positionKey) ||
-    map[state.position.y][state.position.x] === "#" ||
-    (map[state.position.y][state.position.x] !== "." &&
-      map[state.position.y][state.position.x] !== state.direction)
-  )
-    continue;
-  if (state.position.y === map.length - 1)
-    hikeLengths.push(state.visitedPositions.size);
-  const visitedPositions = new Set([...state.visitedPositions, positionKey]);
-  worklist.push(
-    {
-      position: { x: state.position.x, y: state.position.y - 1 },
-      direction: "^",
-      visitedPositions,
-    },
-    {
-      position: { x: state.position.x + 1, y: state.position.y },
-      direction: ">",
-      visitedPositions,
-    },
-    {
-      position: { x: state.position.x, y: state.position.y + 1 },
-      direction: "v",
-      visitedPositions,
-    },
-    {
-      position: { x: state.position.x - 1, y: state.position.y },
-      direction: "<",
-      visitedPositions,
+  console.log(state);
+  visitedCoordinates.add(state.coordinate);
+  const coordinates = [
+    $({ x: state.coordinate.x + 0, y: state.coordinate.y - 1 }),
+    $({ x: state.coordinate.x + 1, y: state.coordinate.y + 0 }),
+    $({ x: state.coordinate.x + 0, y: state.coordinate.y + 1 }),
+    $({ x: state.coordinate.x - 1, y: state.coordinate.y + 0 }),
+  ].filter(
+    (coordinate) =>
+      coordinate !== state.previousCoordinate &&
+      0 <= coordinate.x &&
+      coordinate.x < map[0].length &&
+      0 <= coordinate.y &&
+      coordinate.y < map.length &&
+      map[coordinate.y][coordinate.x] !== "#"
+  );
+  let previousJunction;
+  let steps;
+  if (coordinates.length === 1) {
+    if (nodes.has(coordinates[0])) {
+      edges.add({
+        coordinates: [state.previousJunction, coordinates[0]],
+        steps: state.steps + 1,
+      });
+      continue;
     }
+    previousJunction = state.previousJunction;
+    steps = state.steps + 1;
+  } else {
+    nodes.add(state.coordinate);
+    edges.add({
+      coordinates: [state.previousJunction, state.coordinate],
+      steps: state.steps,
+    });
+    previousJunction = state.coordinate;
+    steps = 1;
+  }
+  worklist.push(
+    ...coordinates.flatMap((coordinate) =>
+      visitedCoordinates.has(coordinate)
+        ? []
+        : [
+            {
+              coordinate,
+              previousCoordinate: state.coordinate,
+              previousJunction,
+              steps,
+            },
+          ]
+    )
   );
 }
 
-console.log(hikeLengths.sort((a, b) => b - a)[0]);
+await fs.writeFile(
+  "23--2.svg",
+  graphviz.renderString(
+    `
+      graph {
+        "${start.x},${start.y}" [label = "start"];
+        "${end.x},${end.y}" [label = "end"];
+        ${[...edges]
+          .map(
+            (edge) =>
+              `"${edge.coordinates[0].x},${edge.coordinates[0].y}" -- "${edge.coordinates[1].x},${edge.coordinates[1].y}" [label = "${edge.steps}"];`
+          )
+          .join("\n")}
+      }
+    `,
+    { format: "svg" }
+  )
+);

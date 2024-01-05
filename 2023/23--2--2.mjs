@@ -1,3 +1,5 @@
+import { intern as $ } from "@radically-straightforward/utilities";
+
 let input = `
 #.###########################################################################################################################################
 #...#...#...#.........###.....###...#.........#.....#...###.....#.....#...#.............#.....#.......#.........#...#...###...#...###...#...#
@@ -168,58 +170,68 @@ let input = `
 // #####################.#
 // `;
 
+// input = `
+// #.###
+// #...#
+// #.#.#
+// #...#
+// ###.#
+// `;
+
 const map = input
   .trim()
   .split("\n")
   .map((line) => line.split(""));
 
-const worklist = [
-  {
-    position: { x: 1, y: 0 },
-    direction: undefined,
-    visitedPositions: new Set(),
-  },
-];
-const hikeLengths = [];
+const nodes = new Set();
+const edges = new Set();
+
+const start = $({ x: 1, y: 0 });
+const end = $({ x: map[0].length - 2, y: map.length - 1 });
+
+const worklist = [$({ position: start, node: start, steps: 0 })];
+const visited = new Set();
 while (worklist.length > 0) {
-  const state = worklist.pop();
-  const positionKey = JSON.stringify(state.position);
-  if (
-    state.position.x < 0 ||
-    state.position.x >= map[0].length ||
-    state.position.y < 0 ||
-    state.position.y >= map.length ||
-    state.visitedPositions.has(positionKey) ||
-    map[state.position.y][state.position.x] === "#" ||
-    (map[state.position.y][state.position.x] !== "." &&
-      map[state.position.y][state.position.x] !== state.direction)
-  )
-    continue;
-  if (state.position.y === map.length - 1)
-    hikeLengths.push(state.visitedPositions.size);
-  const visitedPositions = new Set([...state.visitedPositions, positionKey]);
-  worklist.push(
-    {
-      position: { x: state.position.x, y: state.position.y - 1 },
-      direction: "^",
-      visitedPositions,
-    },
-    {
-      position: { x: state.position.x + 1, y: state.position.y },
-      direction: ">",
-      visitedPositions,
-    },
-    {
-      position: { x: state.position.x, y: state.position.y + 1 },
-      direction: "v",
-      visitedPositions,
-    },
-    {
-      position: { x: state.position.x - 1, y: state.position.y },
-      direction: "<",
-      visitedPositions,
-    }
+  const previous = worklist.pop();
+  const visitedKey = $({ position: previous.position, node: previous.node });
+  if (visited.has(visitedKey)) continue;
+  visited.add(visitedKey);
+  const positions = [
+    $({ x: previous.position.x + 0, y: previous.position.y - 1 }),
+    $({ x: previous.position.x + 1, y: previous.position.y + 0 }),
+    $({ x: previous.position.x + 0, y: previous.position.y + 1 }),
+    $({ x: previous.position.x - 1, y: previous.position.y + 0 }),
+  ].filter(
+    (position) =>
+      0 <= position.x &&
+      position.x < map[0].length &&
+      0 <= position.y &&
+      position.y < map.length &&
+      map[position.y][position.x] !== "#"
   );
+  let node;
+  let steps;
+  if (positions.length === 2) {
+    node = previous.node;
+    steps = previous.steps + 1;
+  } else {
+    node = previous.position;
+    steps = 1;
+    nodes.add(node);
+    if (previous.node !== node)
+      edges.add(
+        $({
+          nodes: $(
+            [previous.node, node].sort((nodeA, nodeB) =>
+              nodeA.x !== nodeB.x ? nodeA.x - nodeB.x : nodeA.y - nodeB.y
+            )
+          ),
+          steps: previous.steps,
+        })
+      );
+  }
+  worklist.push(...positions.map((position) => $({ position, node, steps })));
 }
 
-console.log(hikeLengths.sort((a, b) => b - a)[0]);
+// console.dir(nodes, { depth: null });
+// console.dir(edges, { depth: null });

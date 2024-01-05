@@ -170,13 +170,13 @@ let input = `
 // #####################.#
 // `;
 
-input = `
-#.###
-#...#
-#.#.#
-#...#
-###.#
-`;
+// input = `
+// #.###
+// #...#
+// #.#.#
+// #...#
+// ###.#
+// `;
 
 const map = input
   .trim()
@@ -237,7 +237,7 @@ const edges = new Set();
 let maximumSteps = 0;
 {
   const worklist = [{ node: start, path: [], steps: 0 }];
-  while (worklist > 0) {
+  while (worklist.length > 0) {
     const previous = worklist.pop();
     if (previous.path.includes(previous.node)) continue;
     if (previous.node === end)

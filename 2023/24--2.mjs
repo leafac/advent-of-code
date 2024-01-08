@@ -2,6 +2,7 @@
 // https://www.desmos.com/calculator/ljrhwermvw
 // https://www.desmos.com/calculator/gn4iu1gl4s
 // https://www.desmos.com/3d/5b7cf02b08
+// https://www.desmos.com/calculator/zacp4owukj
 
 let input = `
 156689809620606, 243565579389165, 455137247320393 @ -26, 48, -140
@@ -306,17 +307,13 @@ let input = `
 332093400642358, 273183926405235, 220894804744871 @ -22, 51, 43
 `;
 
-input = `
-19, 13, 30 @ -2,  1, -2
-18, 19, 22 @ -1, -1, -2
-20, 25, 34 @ -2, -2, -4
-12, 31, 28 @ -1, -2, -1
-20, 19, 15 @  1, -5, -3
-`;
-
-input = `
-19, 13, 30 @ -2,  1, -2
-`;
+// input = `
+// 19, 13, 30 @ -2,  1, -2
+// 18, 19, 22 @ -1, -1, -2
+// 20, 25, 34 @ -2, -2, -4
+// 12, 31, 28 @ -1, -2, -1
+// 20, 19, 15 @  1, -5, -3
+// `;
 
 const hailstones = input
   .trim()
@@ -335,3 +332,120 @@ const hailstones = input
       velocity: { x: velocityX, y: velocityY, z: velocityZ },
     };
   });
+
+const [hailstoneA, hailstoneB, ...hailstonesRest] = hailstones;
+
+const rock = {
+  position: { x: undefined, y: undefined, z: undefined },
+  velocity: { x: undefined, y: undefined, z: undefined },
+};
+
+velocitySearch: for (let sum = 0; sum <= Infinity; sum++)
+  for (const quadrant of [
+    { x: +1, y: +1 },
+    { x: -1, y: +1 },
+    { x: -1, y: -1 },
+    { x: +1, y: -1 },
+  ])
+    intersectionSearch: for (let x = 0; x <= sum; x++) {
+      rock.velocity.x = x * quadrant.x;
+      rock.velocity.y = (sum - x) * quadrant.y;
+      const referenceIntersection = intersection(hailstoneA, hailstoneB);
+      for (const hailstoneB of hailstonesRest) {
+        const otherIntersection = intersection(hailstoneA, hailstoneB);
+        if (
+          referenceIntersection.x !== otherIntersection.x ||
+          referenceIntersection.y !== otherIntersection.y
+        )
+          continue intersectionSearch;
+      }
+      rock.position.x = referenceIntersection.x;
+      rock.position.y = referenceIntersection.y;
+      break velocitySearch;
+      function intersection(hailstoneA, hailstoneB) {
+        // f(x) = a*x + b
+
+        // f(px) = py
+        // f(px + vx) = py + vy
+
+        // a*px + b = py
+        // a*(px + vx) + b = py + vy
+        // a*(px + vx) + b = a*px + b + vy
+        // a*(px + vx) - a*px = vy
+        // a*vx = vy
+
+        // a = vy / vx
+        // b = py - a*px
+
+        // fA(x) = Aa*x + Ab
+        // Aa = Avy / Avx
+        // Ab = Apy - Aa*Apx
+
+        // fB(x) = Ba*x + Bb
+        // Ba = Bvy / Bvx
+        // Bb = Bpy - Ba*Bpx
+
+        // fA(x) = fB(x)
+        // =>
+        // Aa*x + Ab = Ba*x + Bb
+        // x = (Bb - Ab) / (Aa - Ba)
+        // y = Aa*x + Ab
+
+        const Apx = hailstoneA.position.x;
+        const Apy = hailstoneA.position.y;
+        const Avx = hailstoneA.velocity.x - rock.velocity.x;
+        const Avy = hailstoneA.velocity.y - rock.velocity.y;
+
+        const Bpx = hailstoneB.position.x;
+        const Bpy = hailstoneB.position.y;
+        const Bvx = hailstoneB.velocity.x - rock.velocity.x;
+        const Bvy = hailstoneB.velocity.y - rock.velocity.y;
+
+        const Aa = Avy / Avx;
+        const Ab = Apy - Aa * Apx;
+
+        const Ba = Bvy / Bvx;
+        const Bb = Bpy - Ba * Bpx;
+
+        const x = (Bb - Ab) / (Aa - Ba);
+        const y = Aa * x + Ab;
+
+        return { x, y };
+      }
+    }
+
+// x = px + vx*t
+
+// Ax = Apx + Avx*t
+// Rx = Rpx + Rvx*t
+
+// Ax = Rx
+// =>
+// Apx + Avx*t = Rpx + Rvx*t
+// t = (Rpx - Apx) / (Avx - Rvx)
+
+const hailstoneATime =
+  (rock.position.x - hailstoneA.position.x) /
+  (hailstoneA.velocity.x - rock.velocity.x);
+const hailstoneBTime =
+  (rock.position.x - hailstoneB.position.x) /
+  (hailstoneB.velocity.x - rock.velocity.x);
+
+// p = p0 + v*t
+
+const hailstoneAZ =
+  hailstoneA.position.z + hailstoneA.velocity.z * hailstoneATime;
+const hailstoneBZ =
+  hailstoneB.position.z + hailstoneB.velocity.z * hailstoneBTime;
+
+// v = d/t
+
+rock.velocity.z =
+  (hailstoneBZ - hailstoneAZ) / (hailstoneBTime - hailstoneATime);
+
+// p = p0 + v*t
+
+rock.position.z = hailstoneAZ - rock.velocity.z * hailstoneATime;
+
+console.log(rock);
+console.log(Object.values(rock.position).reduce((a, b) => a + b, 0));

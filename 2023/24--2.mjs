@@ -3,6 +3,7 @@
 // https://www.desmos.com/calculator/gn4iu1gl4s
 // https://www.desmos.com/3d/5b7cf02b08
 // https://www.desmos.com/calculator/zacp4owukj
+// https://www.desmos.com/calculator/ghaaecn7ru
 
 let input = `
 156689809620606, 243565579389165, 455137247320393 @ -26, 48, -140

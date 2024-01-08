@@ -308,13 +308,21 @@ let input = `
 332093400642358, 273183926405235, 220894804744871 @ -22, 51, 43
 `;
 
-// input = `
-// 19, 13, 30 @ -2,  1, -2
-// 18, 19, 22 @ -1, -1, -2
-// 20, 25, 34 @ -2, -2, -4
-// 12, 31, 28 @ -1, -2, -1
-// 20, 19, 15 @  1, -5, -3
-// `;
+input = `
+19, 13, 30 @ -2,  1, -2
+18, 19, 22 @ -1, -1, -2
+20, 25, 34 @ -2, -2, -4
+12, 31, 28 @ -1, -2, -1
+20, 19, 15 @  1, -5, -3
+`;
+
+input = `
+156689809620606, 243565579389165, 455137247320393 @ -26, 48, -140
+106355761063908, 459832650718033, 351953299411025 @ 73, -206, -52
+271915251832336, 487490927073225, 398003502953444 @ 31, -414, -304
+`;
+
+const offset = 200000000000000;
 
 const hailstones = input
   .trim()
@@ -329,7 +337,11 @@ const hailstones = input
         section.split(",").map((element) => Number(element.trim()))
       );
     return {
-      position: { x: positionX, y: positionY, z: positionZ },
+      position: {
+        x: positionX - offset,
+        y: positionY - offset,
+        z: positionZ - offset,
+      },
       velocity: { x: velocityX, y: velocityY, z: velocityZ },
     };
   });
@@ -352,11 +364,21 @@ velocitySearch: for (let sum = 0; sum <= Infinity; sum++)
       rock.velocity.x = x * quadrant.x;
       rock.velocity.y = (sum - x) * quadrant.y;
       const referenceIntersection = intersection(hailstoneA, hailstoneB);
+      if (
+        Number.isNaN(referenceIntersection.x) ||
+        Number.isNaN(referenceIntersection.y)
+      )
+        continue intersectionSearch;
       for (const hailstoneB of hailstonesRest) {
         const otherIntersection = intersection(hailstoneA, hailstoneB);
         if (
-          referenceIntersection.x !== otherIntersection.x ||
-          referenceIntersection.y !== otherIntersection.y
+          Number.isNaN(otherIntersection.x) ||
+          Number.isNaN(otherIntersection.y)
+        )
+          continue intersectionSearch;
+        if (
+          Math.abs(referenceIntersection.x - otherIntersection.x) > 0.5 ||
+          Math.abs(referenceIntersection.y - otherIntersection.y) > 0.5
         )
           continue intersectionSearch;
       }
@@ -449,4 +471,6 @@ rock.velocity.z =
 rock.position.z = hailstoneAZ - rock.velocity.z * hailstoneATime;
 
 console.log(rock);
-console.log(Object.values(rock.position).reduce((a, b) => a + b, 0));
+console.log(
+  Object.values(rock.position).reduce((a, b) => a + b, 0) + offset * 3
+);

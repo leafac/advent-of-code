@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@radically-straightforward/utilities": "^2.0.7"
+    "@radically-straightforward/utilities": "^2.0.7",
+    "mathjs": "^14.0.1"
   }
 }

@@ -39,7 +39,6 @@ for (let row = 0; row < map.length; row++)
 const mapPicoseconds = Array.from({ length: map.length }, () =>
   Array.from({ length: map[0].length }, () => undefined)
 );
-
 {
   let row = start.row;
   let column = start.column;

@@ -53,70 +53,53 @@ function moveLength({ from, to, keypads }) {
   from = keypad.get(from);
   to = keypad.get(to);
   const disallowed = keypad.get("X");
-  let length = Infinity;
-  if (keypad === numericKeypad) {
+  let length = codeLength({
+    code:
+      keypad === numericKeypad
+        ? "^".repeat(Math.max(0, from.row - to.row)) +
+          ">".repeat(Math.max(0, to.column - from.column)) +
+          "v".repeat(Math.max(0, to.row - from.row)) +
+          "<".repeat(Math.max(0, from.column - to.column)) +
+          "A"
+        : keypad === directionalKeypad
+        ? "v".repeat(Math.max(0, to.row - from.row)) +
+          ">".repeat(Math.max(0, to.column - from.column)) +
+          "^".repeat(Math.max(0, from.row - to.row)) +
+          "<".repeat(Math.max(0, from.column - to.column)) +
+          "A"
+        : (() => {
+            throw new Error();
+          })(),
+    keypads,
+  });
+  if (
+    !(
+      (from.row === disallowed.row && to.column === disallowed.column) ||
+      (from.column === disallowed.column && to.row === disallowed.row)
+    )
+  )
     length = Math.min(
       length,
       codeLength({
         code:
-          "^".repeat(Math.max(0, from.row - to.row)) +
-          ">".repeat(Math.max(0, to.column - from.column)) +
-          "v".repeat(Math.max(0, to.row - from.row)) +
-          "<".repeat(Math.max(0, from.column - to.column)) +
-          "A",
+          keypad === numericKeypad
+            ? "v".repeat(Math.max(0, to.row - from.row)) +
+              "<".repeat(Math.max(0, from.column - to.column)) +
+              "^".repeat(Math.max(0, from.row - to.row)) +
+              ">".repeat(Math.max(0, to.column - from.column)) +
+              "A"
+            : keypad === directionalKeypad
+            ? "^".repeat(Math.max(0, from.row - to.row)) +
+              "<".repeat(Math.max(0, from.column - to.column)) +
+              "v".repeat(Math.max(0, to.row - from.row)) +
+              ">".repeat(Math.max(0, to.column - from.column)) +
+              "A"
+            : (() => {
+                throw new Error();
+              })(),
         keypads,
       })
     );
-    if (
-      !(
-        (from.row === disallowed.row && to.column === disallowed.column) ||
-        (from.column === disallowed.column && to.row === disallowed.row)
-      )
-    )
-      length = Math.min(
-        length,
-        codeLength({
-          code:
-            "v".repeat(Math.max(0, to.row - from.row)) +
-            "<".repeat(Math.max(0, from.column - to.column)) +
-            "^".repeat(Math.max(0, from.row - to.row)) +
-            ">".repeat(Math.max(0, to.column - from.column)) +
-            "A",
-          keypads,
-        })
-      );
-  } else if (keypad === directionalKeypad) {
-    length = Math.min(
-      length,
-      codeLength({
-        code:
-          "v".repeat(Math.max(0, to.row - from.row)) +
-          ">".repeat(Math.max(0, to.column - from.column)) +
-          "^".repeat(Math.max(0, from.row - to.row)) +
-          "<".repeat(Math.max(0, from.column - to.column)) +
-          "A",
-        keypads,
-      })
-    );
-    if (
-      !(
-        (from.row === disallowed.row && to.column === disallowed.column) ||
-        (from.column === disallowed.column && to.row === disallowed.row)
-      )
-    )
-      length = Math.min(
-        length,
-        codeLength({
-          code:
-            "^".repeat(Math.max(0, from.row - to.row)) +
-            "<".repeat(Math.max(0, from.column - to.column)) +
-            "v".repeat(Math.max(0, to.row - from.row)) +
-            ">".repeat(Math.max(0, to.column - from.column)) +
-            "A",
-          keypads,
-        })
-      );
-  } else throw new Error();
   moveLength.cache.set(cacheKey, length);
   return length;
 }

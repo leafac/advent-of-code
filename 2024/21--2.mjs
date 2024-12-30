@@ -31,21 +31,6 @@ X^A
     )
 );
 
-console.log(
-  codes
-    .map(
-      (code) =>
-        codeLength({
-          code,
-          keypads: [
-            numericKeypad,
-            ...Array.from({ length: 2 }, () => directionalKeypad),
-          ],
-        }) * Number(code.slice(0, -1))
-    )
-    .reduce((a, b) => a + b)
-);
-
 function codeLength({ code, keypads }) {
   if (keypads.length === 0) return code.length;
   code = "A" + code;
@@ -60,10 +45,14 @@ function codeLength({ code, keypads }) {
 }
 
 function moveLength({ from, to, keypads }) {
+  const cacheKey = JSON.stringify({ from, to, keypads });
+  const cachedLength = moveLength.cache.get(cacheKey);
+  if (cachedLength !== undefined) return cachedLength;
   const [keypad, ...restKeypads] = keypads;
   keypads = restKeypads;
   from = keypad.get(from);
   to = keypad.get(to);
+  const disallowed = keypad.get("X");
   let length = Infinity;
   if (keypad === numericKeypad) {
     length = Math.min(
@@ -80,8 +69,8 @@ function moveLength({ from, to, keypads }) {
     );
     if (
       !(
-        (from.row === 3 && to.column === 0) ||
-        (from.column === 0 && to.row === 3)
+        (from.row === disallowed.row && to.column === disallowed.column) ||
+        (from.column === disallowed.column && to.row === disallowed.row)
       )
     )
       length = Math.min(
@@ -111,8 +100,8 @@ function moveLength({ from, to, keypads }) {
     );
     if (
       !(
-        (from.row === 3 && to.column === 0) ||
-        (from.column === 0 && to.row === 3)
+        (from.row === disallowed.row && to.column === disallowed.column) ||
+        (from.column === disallowed.column && to.row === disallowed.row)
       )
     )
       length = Math.min(
@@ -128,5 +117,22 @@ function moveLength({ from, to, keypads }) {
         })
       );
   } else throw new Error();
+  moveLength.cache.set(cacheKey, length);
   return length;
 }
+moveLength.cache = new Map();
+
+console.log(
+  codes
+    .map(
+      (code) =>
+        codeLength({
+          code,
+          keypads: [
+            numericKeypad,
+            ...Array.from({ length: 25 }, () => directionalKeypad),
+          ],
+        }) * Number(code.slice(0, -1))
+    )
+    .reduce((a, b) => a + b)
+);

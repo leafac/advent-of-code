@@ -32,9 +32,9 @@ X^A
 );
 
 function codeLength({ code, keypads }) {
-  if (keypads.length === 0) return code.length;
+  if (keypads.length === 0) return BigInt(code.length);
   code = "A" + code;
-  let length = 0;
+  let length = 0n;
   for (let codeIndex = 1; codeIndex < code.length; codeIndex++)
     length += moveLength({
       from: code[codeIndex - 1],
@@ -77,29 +77,28 @@ function moveLength({ from, to, keypads }) {
       (from.row === disallowed.row && to.column === disallowed.column) ||
       (from.column === disallowed.column && to.row === disallowed.row)
     )
-  )
-    length = Math.min(
-      length,
-      codeLength({
-        code:
-          keypad === numericKeypad
-            ? "v".repeat(Math.max(0, to.row - from.row)) +
-              "<".repeat(Math.max(0, from.column - to.column)) +
-              "^".repeat(Math.max(0, from.row - to.row)) +
-              ">".repeat(Math.max(0, to.column - from.column)) +
-              "A"
-            : keypad === directionalKeypad
-            ? "^".repeat(Math.max(0, from.row - to.row)) +
-              "<".repeat(Math.max(0, from.column - to.column)) +
-              "v".repeat(Math.max(0, to.row - from.row)) +
-              ">".repeat(Math.max(0, to.column - from.column)) +
-              "A"
-            : (() => {
-                throw new Error();
-              })(),
-        keypads,
-      })
-    );
+  ) {
+    const otherLength = codeLength({
+      code:
+        keypad === numericKeypad
+          ? "<".repeat(Math.max(0, from.column - to.column)) +
+            "v".repeat(Math.max(0, to.row - from.row)) +
+            ">".repeat(Math.max(0, to.column - from.column)) +
+            "^".repeat(Math.max(0, from.row - to.row)) +
+            "A"
+          : keypad === directionalKeypad
+          ? "<".repeat(Math.max(0, from.column - to.column)) +
+            "^".repeat(Math.max(0, from.row - to.row)) +
+            ">".repeat(Math.max(0, to.column - from.column)) +
+            "v".repeat(Math.max(0, to.row - from.row)) +
+            "A"
+          : (() => {
+              throw new Error();
+            })(),
+      keypads,
+    });
+    if (otherLength < length) length = otherLength;
+  }
   moveLength.cache.set(cacheKey, length);
   return length;
 }
@@ -115,7 +114,7 @@ console.log(
             numericKeypad,
             ...Array.from({ length: 25 }, () => directionalKeypad),
           ],
-        }) * Number(code.slice(0, -1))
+        }) * BigInt(Number(code.slice(0, -1)))
     )
     .reduce((a, b) => a + b)
 );

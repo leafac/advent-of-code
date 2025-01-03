@@ -3,13 +3,22 @@ const input = ``
 
 
 
+const masses = input.split('\n').map(Number);
 
+function calculateFuel(fuel: number) {
+    let sum = 0
+    while (true) {
+        fuel = Math.floor(fuel / 3) - 2
+        if (fuel <= 0) {
+            break
+        }
+        sum += fuel
+    }
+    return sum
+}
 
-const fuels = input.split('\n').map(BigInt).map(mass => (mass / 3n) - 2n)
-
-let sum = 0n
-for (const fuel of fuels) {
-  sum += fuel
+let sum = 0
+for (const fuel of masses) {
+  sum += calculateFuel(fuel)
 }
 console.log(sum)
-

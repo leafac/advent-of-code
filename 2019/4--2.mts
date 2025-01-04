@@ -6,7 +6,7 @@ let passwordCounts = 0;
 const repeatedDigitsRegex = new RegExp(
   Array.from(
     { length: 10 },
-    (_, digit) => `(([^${digit}]|^)${digit}([^${digit}]|$))`
+    (_, digit) => `(([^${digit}]|^)${digit}${digit}([^${digit}]|$))`
   ).join("|")
 );
 for (let possiblePassword = start; possiblePassword <= end; possiblePassword++)

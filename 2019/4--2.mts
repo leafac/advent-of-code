@@ -3,15 +3,9 @@ let input = "";
 const [start, end] = input.split("-").map(Number);
 
 let passwordCounts = 0;
-const repeatedDigitsRegex = new RegExp(
-  Array.from(
-    { length: 10 },
-    (_, digit) => `(([^${digit}]|^)${digit}${digit}([^${digit}]|$))`
-  ).join("|")
-);
 for (let possiblePassword = start; possiblePassword <= end; possiblePassword++)
   if (
-    String(possiblePassword).match(repeatedDigitsRegex) &&
+    String(possiblePassword).match(/(?=(.))(?<!\1)\1{2}(?!\1)/) &&
     String(possiblePassword)
       .split("")
       .map(Number)

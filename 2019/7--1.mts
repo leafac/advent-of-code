@@ -137,4 +137,3 @@ for (const permutation of permutationsWithoutRepetition([0, 1, 2, 3, 4])) {
 }
 
 console.log(max);
-// 398674

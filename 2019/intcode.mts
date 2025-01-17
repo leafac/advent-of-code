@@ -1,5 +1,5 @@
 export type Machine = {
-  memory: bigint[];
+  memory: Map<bigint, bigint>;
   input: bigint[];
   output: bigint[];
   instructionPointer: bigint;
@@ -25,7 +25,7 @@ export function newMachine({
 }
 
 export function step(machine: Machine): void {
-  const instruction = machine.memory[machine.instructionPointer++];
+  const instruction = machine.memory.get(machine.instructionPointer++) ?? 0n;
   const opcode = Number(instruction.toString().slice(-2));
   const parameterModes = instruction
     .toString()
@@ -45,35 +45,41 @@ export function step(machine: Machine): void {
   else if (opcode === 5) {
     const parameter1 = getParameter();
     const parameter2 = getParameter();
-    if (parameter1 !== 0) machine.instructionPointer = parameter2;
+    if (parameter1 !== 0n) machine.instructionPointer = parameter2;
   } else if (opcode === 6) {
     const parameter1 = getParameter();
     const parameter2 = getParameter();
-    if (parameter1 === 0) machine.instructionPointer = parameter2;
+    if (parameter1 === 0n) machine.instructionPointer = parameter2;
   } else if (opcode === 7)
-    setParameter(getParameter() < getParameter() ? 1 : 0);
+    setParameter(getParameter() < getParameter() ? 1n : 0n);
   else if (opcode === 8)
-    setParameter(getParameter() === getParameter() ? 1 : 0);
+    setParameter(getParameter() === getParameter() ? 1n : 0n);
   else if (opcode === 9) machine.relativeBase += getParameter();
   else if (opcode === 99) machine.halted = true;
   else throw new Error();
   function getParameter(): bigint {
     const parameterMode = parameterModes.pop() ?? 0;
     return parameterMode === 0
-      ? machine.memory[machine.memory[machine.instructionPointer++]]
+      ? machine.memory.get(
+          machine.memory.get(machine.instructionPointer++) ?? 0n
+        ) ?? 0n
       : parameterMode === 1
-      ? machine.memory[machine.instructionPointer++]
+      ? machine.memory.get(machine.instructionPointer++) ?? 0n
       : parameterMode === 2
-      ? machine.memory[
-          machine.relativeBase + machine.memory[machine.instructionPointer++]
-        ]
+      ? machine.memory.get(
+          machine.relativeBase +
+            (machine.memory.get(machine.instructionPointer++) ?? 0n)
+        ) ?? 0n
       : (() => {
           throw new Error();
         })();
   }
   function setParameter(number: bigint): void {
     if ((parameterModes.pop() ?? 0) !== 0) throw new Error();
-    machine.memory[machine.memory[machine.instructionPointer++]] = number;
+    machine.memory.set(
+      machine.memory.get(machine.instructionPointer++) ?? 0n,
+      number
+    );
   }
 }
 

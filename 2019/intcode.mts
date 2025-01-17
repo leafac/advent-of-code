@@ -1,9 +1,9 @@
 export type Machine = {
-  memory: number[];
-  input: number[];
-  output: number[];
-  instructionPointer: number;
-  relativeBase: number;
+  memory: bigint[];
+  input: bigint[];
+  output: bigint[];
+  instructionPointer: bigint;
+  relativeBase: bigint;
   halted: boolean;
 };
 
@@ -11,15 +11,15 @@ export function newMachine({
   memory,
   input = [],
 }: {
-  memory: number[];
-  input?: number[];
+  memory: bigint[];
+  input?: bigint[];
 }): Machine {
   return {
     memory,
     input,
     output: [],
-    instructionPointer: 0,
-    relativeBase: 0,
+    instructionPointer: 0n,
+    relativeBase: 0n,
     halted: false,
   };
 }
@@ -57,7 +57,7 @@ export function step(machine: Machine): void {
   else if (opcode === 9) machine.relativeBase += getParameter();
   else if (opcode === 99) machine.halted = true;
   else throw new Error();
-  function getParameter(): number {
+  function getParameter(): bigint {
     const parameterMode = parameterModes.pop() ?? 0;
     return parameterMode === 0
       ? machine.memory[machine.memory[machine.instructionPointer++]]
@@ -71,7 +71,7 @@ export function step(machine: Machine): void {
           throw new Error();
         })();
   }
-  function setParameter(number: number): void {
+  function setParameter(number: bigint): void {
     if ((parameterModes.pop() ?? 0) !== 0) throw new Error();
     machine.memory[machine.memory[machine.instructionPointer++]] = number;
   }

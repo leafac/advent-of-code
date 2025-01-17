@@ -11,11 +11,16 @@ export function newMachine({
   memory,
   input = [],
 }: {
-  memory: bigint[];
+  memory: string;
   input?: bigint[];
 }): Machine {
   return {
-    memory,
+    memory: new Map(
+      memory
+        .trim()
+        .split(",")
+        .map((numberString, index) => [BigInt(index), BigInt(numberString)])
+    ),
     input,
     output: [],
     instructionPointer: 0n,

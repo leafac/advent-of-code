@@ -1,5 +1,5 @@
 export type Machine = {
-  memory: Map<bigint, bigint>;
+  memory: MapWithDefault<bigint, bigint>;
   input: bigint[];
   output: bigint[];
   instructionPointer: bigint;
@@ -9,19 +9,21 @@ export type Machine = {
 
 export function newMachine({
   memory,
-  input = [],
+  input = "",
 }: {
   memory: string;
-  input?: bigint[];
+  input?: string;
 }): Machine {
+  const memoryMapWithDefault = new MapWithDefault(
+    memory
+      .trim()
+      .split(",")
+      .map((numberString, index) => [BigInt(index), BigInt(numberString)])
+  );
+  memoryMapWithDefault.default = 0n;
   return {
-    memory: new Map(
-      memory
-        .trim()
-        .split(",")
-        .map((numberString, index) => [BigInt(index), BigInt(numberString)])
-    ),
-    input,
+    memory: memoryMapWithDefault,
+    input: input.trim().split(",").map(BigInt),
     output: [],
     instructionPointer: 0n,
     relativeBase: 0n,
@@ -96,4 +98,11 @@ export function next(machine: Machine): void {
   const outputLength = machine.output.length;
   while (!machine.halted && machine.output.length === outputLength)
     step(machine);
+}
+
+class MapWithDefault<Key, Value> extends Map<Key, Value> {
+  default: Value;
+  get(key: Key): Value {
+    return super.get(key) ?? this.default;
+  }
 }

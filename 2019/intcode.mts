@@ -32,7 +32,7 @@ export function newMachine({
 }
 
 export function step(machine: Machine): void {
-  const instruction = machine.memory.get(machine.instructionPointer++) ?? 0n;
+  const instruction = machine.memory.get(machine.instructionPointer++);
   const opcode = Number(instruction.toString().slice(-2));
   const parameterModes = instruction
     .toString()
@@ -67,16 +67,14 @@ export function step(machine: Machine): void {
   function getParameter(): bigint {
     const parameterMode = parameterModes.pop() ?? 0;
     return parameterMode === 0
-      ? machine.memory.get(
-          machine.memory.get(machine.instructionPointer++) ?? 0n
-        ) ?? 0n
+      ? machine.memory.get(machine.memory.get(machine.instructionPointer++))
       : parameterMode === 1
-      ? machine.memory.get(machine.instructionPointer++) ?? 0n
+      ? machine.memory.get(machine.instructionPointer++)
       : parameterMode === 2
       ? machine.memory.get(
           machine.relativeBase +
-            (machine.memory.get(machine.instructionPointer++) ?? 0n)
-        ) ?? 0n
+            machine.memory.get(machine.instructionPointer++)
+        )
       : (() => {
           throw new Error();
         })();
@@ -84,7 +82,7 @@ export function step(machine: Machine): void {
   function setParameter(number: bigint): void {
     if ((parameterModes.pop() ?? 0) !== 0) throw new Error();
     machine.memory.set(
-      machine.memory.get(machine.instructionPointer++) ?? 0n,
+      machine.memory.get(machine.instructionPointer++),
       number
     );
   }

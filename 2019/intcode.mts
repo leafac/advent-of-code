@@ -3,6 +3,7 @@ export type Machine = {
   input: number[];
   output: number[];
   instructionPointer: number;
+  relativeBase: number;
   halted: boolean;
 };
 
@@ -18,6 +19,7 @@ export function newMachine({
     input,
     output: [],
     instructionPointer: 0,
+    relativeBase: 0,
     halted: false,
   };
 }
@@ -52,12 +54,22 @@ export function step(machine: Machine): void {
     setParameter(getParameter() < getParameter() ? 1 : 0);
   else if (opcode === 8)
     setParameter(getParameter() === getParameter() ? 1 : 0);
+  else if (opcode === 9) machine.relativeBase += getParameter();
   else if (opcode === 99) machine.halted = true;
   else throw new Error();
   function getParameter(): number {
-    return (parameterModes.pop() ?? 0) === 0
+    const parameterMode = parameterModes.pop() ?? 0;
+    return parameterMode === 0
       ? machine.memory[machine.memory[machine.instructionPointer++]]
-      : machine.memory[machine.instructionPointer++];
+      : parameterMode === 1
+      ? machine.memory[machine.instructionPointer++]
+      : parameterMode === 2
+      ? machine.memory[
+          machine.relativeBase + machine.memory[machine.instructionPointer++]
+        ]
+      : (() => {
+          throw new Error();
+        })();
   }
   function setParameter(number: number): void {
     if ((parameterModes.pop() ?? 0) !== 0) throw new Error();

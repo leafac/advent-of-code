@@ -1,4 +1,4 @@
-import * as intcode from "./intcode.mts";
+import * as intcode from "./7--2--2--intcode.mts";
 
 const ampProgram = [];
 

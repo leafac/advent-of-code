@@ -1,7 +1,8 @@
-import * as intcode from "./intcode.mts";
+import * as intcode from "./9--1--intcode.mts";
 
 const machine = intcode.newMachine({
-  memory: "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99",
+  memory: "",
+  input: "1",
 });
 intcode.run(machine);
 console.log(machine.output.map(String).join(","));

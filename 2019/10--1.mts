@@ -1,10 +1,3 @@
-// Keep track of maxCount
-// Iterate through each asteroid
-// countVisible
-//   iterate through each asteroid
-//     calculate the simplest vector put it in a set
-//   return length of set
-
 const input = ``;
 
 class Node {
@@ -12,6 +5,7 @@ class Node {
   row: number;
 }
 
+// Parsed all the nodes in an array
 const nodes: Node[] = [];
 const lines = input.trim().split("\n");
 for (let row = 0; row < lines.length; row++) {
@@ -26,6 +20,7 @@ for (let row = 0; row < lines.length; row++) {
   }
 }
 
+// Count the max visible asteroids
 let maxVisible = -1;
 for (const node of nodes) {
   maxVisible = Math.max(maxVisible, countVisible(node));
@@ -38,7 +33,7 @@ function countVisible(root: Node) {
     const vector = primitiveVector(root, node);
     vectors.add(vector);
   }
-  return vectors.size;
+  return vectors.size - 1;
 }
 
 function primitiveVector(a: Node, b: Node) {
@@ -52,28 +47,8 @@ function gcd(a: number, b: number) {
 
 function reduceFraction(numerator: number, denominator: number) {
   if (numerator === 0 && denominator === 0) return "0:0";
-  if (numerator === 0) return `0:1`;
-  if (denominator === 0) return `1:0`;
-  const divisor = gcd(numerator, denominator);
+  if (numerator === 0) return denominator < 0 ? `0:-1` : `0:1`;
+  if (denominator === 0) return numerator < 0 ? `-1:0` : `1:0`;
+  const divisor = Math.abs(gcd(numerator, denominator));
   return `${numerator / divisor}:${denominator / divisor}`;
 }
-
-// Old Approach 1:
-// Keep track of maxCount
-// Iterate through asteroids
-//  countVisible
-//   Init a "seen" matrix
-//   BFS from the node (if it's not been seen)
-//     * Increment the count
-//     * Calculate the unit vector -> markRaySeen(unitVector)
-
-// func unitVector(a, b)
-//  return (a.x - b.x, a.y - b.y)
-// func markRaySeen(unitVector)
-
-// Distance from the station to the
-// x dist - y dist, do the same for other
-// if the ratios are the same -> yes it's blocking
-
-// Ratio is the same as unit vector, your check is
-// do these two have the same unit vector?

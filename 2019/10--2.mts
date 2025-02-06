@@ -1,12 +1,44 @@
-const input = `
+let input = `
 ###
 ###
 ###
 `;
 
+// input = `
+// ..#
+// ...
+// ..#
+// `;
+
+input = `
+.#..##.###...#######
+##.############..##.
+.#.######.########.#
+.###.#######.####.#.
+#####.##.#.##.###.##
+..#####..#.#########
+####################
+#.####....###.#.#.##
+##.#################
+#####.##.###..####..
+..######..##.#######
+####.##.####...##..#
+.#####..#.######.###
+##...#.##########...
+#.##########.#######
+.####.#.###.###.#.##
+....##.##.###..#####
+.#.#.###########.###
+#.#.#.#####.####.###
+###.##.####.##.#..##
+`;
+
+input = `
+`;
+
 class Node {
-  col: number;
-  row: number;
+  x: number;
+  y: number;
 }
 
 // Parsed all the nodes in an array
@@ -17,8 +49,8 @@ for (let row = 0; row < lines.length; row++) {
   for (let col = 0; col < line.length; col++) {
     if (line[col] === "#") {
       const node = new Node();
-      node.col = col;
-      node.row = row;
+      node.x = col;
+      node.y = lines.length - 1 - row;
       nodes.push(node);
     }
   }
@@ -29,14 +61,15 @@ for (const station of nodes) {
   const map: typeof maxMap = new Map();
   for (const asteroid of nodes) {
     if (station === asteroid) continue;
-    const key = Math.atan2(
-      asteroid.row - station.row,
-      asteroid.col - station.col
+    const key = (
+      (Math.atan2(asteroid.y - station.y, asteroid.x - station.x) / Math.PI +
+        1.49999) %
+      2
     ).toFixed(4);
     const value = {
       asteroid,
       distance: Math.sqrt(
-        (asteroid.row - station.row) ** 2 + (asteroid.col - station.col) ** 2
+        (asteroid.x - station.x) ** 2 + (asteroid.y - station.y) ** 2
       ),
     };
     map.get(key)?.push(value) ?? map.set(key, [value]);
@@ -45,8 +78,34 @@ for (const station of nodes) {
 }
 for (const values of maxMap.values())
   values.sort(({ distance: a }, { distance: b }) => a - b);
-const angles = [...maxMap.keys()].sort((a, b) => Number(a) - Number(b));
+const keys = [...maxMap.keys()].sort((a, b) => Number(b) - Number(a));
 
+// console.log(keys);
+// console.dir(maxMap, { depth: Infinity });
+
+let keysIndex = 0;
+for (
+  let asteroidsDestroyedCount = 0;
+  asteroidsDestroyedCount < 200 - 1;
+  asteroidsDestroyedCount++
+) {
+  const key = keys[keysIndex];
+  const asteroids = maxMap.get(key);
+  if (asteroids === undefined) throw new Error();
+  asteroids.shift();
+  if (asteroids.length === 0) {
+    maxMap.delete(key);
+    keys.splice(keysIndex, 1);
+  } else keysIndex++;
+  keysIndex = keysIndex % keys.length;
+}
+const asteroids = maxMap.get(keys[keysIndex]);
+if (asteroids === undefined) throw new Error();
+const theOne = asteroids.shift();
+if (theOne === undefined) throw new Error();
+console.log(theOne);
+
+console.log(theOne.asteroid.x * 100 + lines.length - 1 - theOne.asteroid.y);
 
 // Compute the fraction
 // Keep track which one is closes

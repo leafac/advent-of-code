@@ -13,6 +13,37 @@
 
 /*
 
+function compare(a, b) {
+    if cache[a+b]: return cache[a+b]
+
+    queue = [rootFormula]
+    // FUEL = a, b
+
+    cache[a+b] = ret
+    return ret
+}
+
+
+topologicalSort(formula) {
+    const dependencies = Record<string, Set> = {}
+
+    for f in formula:
+        deps[f.chemical].add(...f.children)
+        for d in deps:
+            if d.has(f.chemical):
+                d.add(...f.children)
+
+    
+
+    return nodes.sort((a, b) => {
+        // return getOrder(a) - getOrder(b)
+        return dependencies[a].includes(b) ? 1 : dependencies[b].includes(a) ? -1 : 0
+    })
+}
+
+-------
+
+
 function simplify(node):
     if node.chemical == ORE: 
         state["ORE"] += node.count

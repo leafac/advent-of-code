@@ -1,13 +1,70 @@
+let input = `
+10 ORE => 10 A
+1 ORE => 1 B
+7 A, 1 B => 1 C
+7 A, 1 C => 1 D
+7 A, 1 D => 1 E
+7 A, 1 E => 1 FUEL
+`;
+
+const reactions: Record<
+  string,
+  { outputAmount: number; inputs: Array<{ chemical: string; amount: number }> }
+> = {};
+for (const line of input.trim().split("\n")) {
+  const [inputsString, outputString] = line.split("=>");
+  const [outputAmountString, outputChemical] = outputString.trim().split(" ");
+  const inputs = inputsString.split(", ").map((x) => {
+    const y = x.trim().split(" ");
+    return { chemical: y[1], amount: Number(y[0]) };
+  });
+  reactions[outputChemical] = {
+    outputAmount: Number(outputAmountString),
+    inputs,
+  };
+}
+
+const cumulativeInputs: Map<string, Set<string>> = new Map();
+for (const [chemical, {inputs}] of Object.entries(reactions)) {
+  cumulativeInputs.set(
+    chemical,
+    // @ts-ignore
+    (cumulativeInputs.get(chemical) || new Set()).union(
+      new Set(inputs.map((x) => x.chemical))
+    )
+  );
+}
+
+console.log(cumulativeInputs)
+
+let changed = true;
+while (changed) {
+  changed = false;
+  for (const [c1, d1] of cumulativeInputs.entries()) {
+    for (const [c2, d2] of cumulativeInputs.entries()) {
+      if (d1.has(c2)) {
+        const previousSize = d1.size
+        
+        // @ts-ignore
+        cumulativeInputs.set(c1, d1.union(d2));
+        
+        if (cumulativeInputs.get(c1)!.size !== previousSize) changed = true
+      }
+    }
+  }
+}
+
+console.log(cumulativeInputs)
+
+
 // start at the end
 // replace the things - simplify
 // in terms of ORE
-
 
 // Left & right
 // start at the end
 // replace the things - simplify
 // in terms of ORE
-
 
 // Left & right
 

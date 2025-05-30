@@ -24,7 +24,9 @@ for (const line of input.trim().split("\n")) {
   };
 }
 
-const cumulativeInputs: Map<string, Set<string>> = new Map();
+const cumulativeInputs: Map<string, Set<string>> = new Map([
+  ["ORE", new Set()],
+]);
 for (const [chemical, { inputs }] of Object.entries(reactions)) {
   cumulativeInputs.set(
     chemical,
@@ -37,21 +39,20 @@ for (const [chemical, { inputs }] of Object.entries(reactions)) {
 
 console.log(cumulativeInputs);
 
-let changed = true;
-while (changed) {
-  changed = false;
+while (true) {
+  let previousSize = 0;
+  for (const value of cumulativeInputs.values()) previousSize += value.size;
   for (const [c1, d1] of cumulativeInputs.entries()) {
     for (const [c2, d2] of cumulativeInputs.entries()) {
       if (d1.has(c2)) {
-        const previousSize = d1.size;
-
         // @ts-ignore
         cumulativeInputs.set(c1, d1.union(d2));
-
-        if (cumulativeInputs.get(c1)!.size !== previousSize) changed = true;
       }
     }
   }
+  let currentSize = 0;
+  for (const value of cumulativeInputs.values()) currentSize += value.size;
+  if (previousSize === currentSize) break;
 }
 
 console.log(cumulativeInputs);
@@ -80,7 +81,7 @@ function solve(): number {
   }
 }
 
-console.log(solve())
+console.log(solve());
 
 function sort(d: Dependencies) {
   return d.sort((a, b) => {
@@ -93,7 +94,7 @@ function sort(d: Dependencies) {
 }
 
 function combine(d: Dependencies) {
-  console.log(d)
+  console.log(d);
   const d2: Dependencies = [];
   for (const dep of d) {
     const existing = d2.find((x) => x.chemical === dep.chemical);
@@ -107,10 +108,6 @@ function combine(d: Dependencies) {
 }
 
 function replace(d: Dependency): Dependencies {
-  if (d.chemical === "ORE") {
-    return [d]
-  }
-  
   const reaction = reactions[d.chemical];
   const mul = Math.ceil(d.amount / reaction.outputAmount);
   return reaction.inputs.map((x) => ({

@@ -86,38 +86,38 @@ for (const line of input.trim().split("\n")) {
   };
 }
 
-const cumulativeInputs: Map<string, Set<string>> = new Map([
+const transitiveClosure: Map<string, Set<string>> = new Map([
   ["ORE", new Set()],
 ]);
 for (const [chemical, { inputs }] of Object.entries(reactions)) {
-  cumulativeInputs.set(
+  transitiveClosure.set(
     chemical,
     // @ts-ignore
-    (cumulativeInputs.get(chemical) || new Set()).union(
+    (transitiveClosure.get(chemical) || new Set()).union(
       new Set(inputs.map((x) => x.chemical))
     )
   );
 }
 
-console.log(cumulativeInputs);
+// console.log(transitiveClosure);
 
 while (true) {
   let previousSize = 0;
-  for (const value of cumulativeInputs.values()) previousSize += value.size;
-  for (const [c1, d1] of cumulativeInputs.entries()) {
-    for (const [c2, d2] of cumulativeInputs.entries()) {
+  for (const value of transitiveClosure.values()) previousSize += value.size;
+  for (const [c1, d1] of transitiveClosure.entries()) {
+    for (const [c2, d2] of transitiveClosure.entries()) {
       if (d1.has(c2)) {
         // @ts-ignore
-        cumulativeInputs.set(c1, d1.union(d2));
+        transitiveClosure.set(c1, d1.union(d2));
       }
     }
   }
   let currentSize = 0;
-  for (const value of cumulativeInputs.values()) currentSize += value.size;
+  for (const value of transitiveClosure.values()) currentSize += value.size;
   if (previousSize === currentSize) break;
 }
 
-console.log(cumulativeInputs);
+console.log(transitiveClosure);
 
 type Dependency = {
   chemical: string;
@@ -136,27 +136,35 @@ function solve(): number {
       return dependencies[0].amount;
     }
 
-    sort(dependencies);
+    const idx = pick(dependencies);
 
-    const [first, ...rest] = dependencies;
-    dependencies = combine([...replace(first), ...rest]);
+    const [picked] = dependencies.splice(idx, 1)
+    console.log(picked);
+    dependencies = combine([...replace(picked), ...dependencies]);
   }
 }
 
 console.log(solve());
 
-function sort(d: Dependencies) {
-  return d.sort((a, b) => {
-    return cumulativeInputs.get(a.chemical)!.has(b.chemical)
-      ? -1
-      : cumulativeInputs.get(b.chemical)!.has(a.chemical)
-      ? 1
-      : 0;
-  });
+function pick(d: Dependencies) {
+  // Find the one which is not in the dependencies of any other
+  const result: Dependencies = [d[0]]
+  for (let i = 0; i < d.length; i++) {
+    let isOkay = true
+    for (let j = 0; j < d.length; j++) {
+      if (i == j) continue
+      if (transitiveClosure.get(d[j].chemical)!.has(d[i].chemical)) {
+        isOkay = false
+      }
+    }
+    if (isOkay) return i
+  }
+
+  throw new Error("asdf")
 }
 
 function combine(d: Dependencies) {
-  console.log(d);
+  // console.log(d);
   const d2: Dependencies = [];
   for (const dep of d) {
     const existing = d2.find((x) => x.chemical === dep.chemical);

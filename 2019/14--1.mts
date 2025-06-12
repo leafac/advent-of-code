@@ -86,6 +86,10 @@ for (const line of input.trim().split("\n")) {
   };
 }
 
+// for (const [output, { inputs }] of Object.entries(reactions))
+//   for (const { chemical: input } of inputs)
+//     console.log(`${input} -> ${output};`);
+
 const transitiveClosure: Map<string, Set<string>> = new Map([
   ["ORE", new Set()],
 ]);
@@ -101,14 +105,18 @@ for (const [chemical, { inputs }] of Object.entries(reactions)) {
 
 // console.log(transitiveClosure);
 
-while (true) {
+// while (true) {
+for (let iteration = 0; iteration < 1_000_000; iteration++) {
   let previousSize = 0;
   for (const value of transitiveClosure.values()) previousSize += value.size;
-  for (const [c1, d1] of transitiveClosure.entries()) {
-    for (const [c2, d2] of transitiveClosure.entries()) {
-      if (d1.has(c2)) {
-        // @ts-ignore
-        transitiveClosure.set(c1, d1.union(d2));
+  for (const c1 of transitiveClosure.keys()) {
+    for (const c2 of transitiveClosure.keys()) {
+      if (transitiveClosure.get(c1)!.has(c2)) {
+        transitiveClosure.set(
+          c1,
+          // @ts-ignore
+          transitiveClosure.get(c1)!.union(transitiveClosure.get(c2)!)
+        );
       }
     }
   }
@@ -117,7 +125,8 @@ while (true) {
   if (previousSize === currentSize) break;
 }
 
-console.log(transitiveClosure);
+// console.log(transitiveClosure.get("BPHZ"));
+// console.log(transitiveClosure);
 
 type Dependency = {
   chemical: string;
@@ -138,8 +147,8 @@ function solve(): number {
 
     const idx = pick(dependencies);
 
-    const [picked] = dependencies.splice(idx, 1)
-    console.log(picked);
+    const [picked] = dependencies.splice(idx, 1);
+    // console.log(picked);
     dependencies = combine([...replace(picked), ...dependencies]);
   }
 }
@@ -148,19 +157,19 @@ console.log(solve());
 
 function pick(d: Dependencies) {
   // Find the one which is not in the dependencies of any other
-  const result: Dependencies = [d[0]]
+  const result: Dependencies = [d[0]];
   for (let i = 0; i < d.length; i++) {
-    let isOkay = true
+    let isOkay = true;
     for (let j = 0; j < d.length; j++) {
-      if (i == j) continue
+      if (i == j) continue;
       if (transitiveClosure.get(d[j].chemical)!.has(d[i].chemical)) {
-        isOkay = false
+        isOkay = false;
       }
     }
-    if (isOkay) return i
+    if (isOkay) return i;
   }
 
-  throw new Error("asdf")
+  throw new Error("asdf");
 }
 
 function combine(d: Dependencies) {

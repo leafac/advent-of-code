@@ -1,0 +1,15 @@
+<svg viewBox="0 0 99999 99999" xmlns="http://www.w3.org/2000/svg">
+  <path
+    fill="green"
+    d="
+    M 97603,50471
+L ...
+z
+    " />
+
+
+
+<circle cx="97603" cy="50471" r="500" fill="red" />
+...
+
+</svg>

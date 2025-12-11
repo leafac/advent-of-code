@@ -1,5 +1,3 @@
-import utilities from "node:util";
-
 let input = `
 [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
 [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
@@ -35,7 +33,8 @@ const machines = input
             )
         )
       ),
-      pressedButtons: new Set(),
+      pressedButtons: 0,
+      presses: 0,
     };
   });
 
@@ -48,23 +47,22 @@ machines: for (const machine of machines) {
       const indicatorLights = machine.indicatorLights ^ button;
       const availableButtons = new Set(machine.availableButtons);
       availableButtons.delete(button);
-      const pressedButtons = new Set(machine.pressedButtons);
-      pressedButtons.add(button);
+      const pressedButtons = machine.pressedButtons + button;
+      const presses = machine.presses + 1;
       if (indicatorLights === 0) {
-        totalPresses += pressedButtons.size;
+        totalPresses += presses;
         continue machines;
       }
       if (
         (button | machine.indicatorLights) !== 0 &&
-        queue.every(
-          (machine) =>
-            !utilities.isDeepStrictEqual(
-              machine.availableButtons,
-              availableButtons
-            )
-        )
+        queue.every((machine) => machine.pressedButtons !== pressedButtons)
       )
-        queue.push({ indicatorLights, availableButtons, pressedButtons });
+        queue.push({
+          indicatorLights,
+          availableButtons,
+          pressedButtons,
+          presses,
+        });
     }
   }
 }

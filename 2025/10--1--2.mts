@@ -23,7 +23,7 @@ const machines = input
           .join(""),
         2
       ),
-      buttons: new Set(
+      availableButtons: new Set(
         buttonWirings.map((buttonWiring) =>
           buttonWiring
             .slice(1, -1)
@@ -35,31 +35,36 @@ const machines = input
             )
         )
       ),
+      pressedButtons: new Set(),
     };
   });
 
 let totalPresses = 0;
 machines: for (const machine of machines) {
-  const queue = [{ machine, presses: 0 }];
+  const queue = [machine];
   while (true) {
-    const { machine, presses: previousPresses } = queue.shift()!;
-    for (const button of machine.buttons) {
-      if ((button | machine.indicatorLights) === 0) continue;
-      const presses = previousPresses + 1;
+    const machine = queue.shift()!;
+    for (const button of machine.availableButtons) {
       const indicatorLights = machine.indicatorLights ^ button;
+      const availableButtons = new Set(machine.availableButtons);
+      availableButtons.delete(button);
+      const pressedButtons = new Set(machine.pressedButtons);
+      pressedButtons.add(button);
       if (indicatorLights === 0) {
-        totalPresses += presses;
+        totalPresses += pressedButtons.size;
         continue machines;
       }
-      const buttons = new Set(machine.buttons);
-      buttons.delete(button);
       if (
-        queue.some(({ machine }) =>
-          utilities.isDeepStrictEqual(machine.buttons, buttons)
+        (button | machine.indicatorLights) !== 0 &&
+        queue.every(
+          (machine) =>
+            !utilities.isDeepStrictEqual(
+              machine.availableButtons,
+              availableButtons
+            )
         )
       )
-        continue;
-      queue.push({ machine: { indicatorLights, buttons }, presses });
+        queue.push({ indicatorLights, availableButtons, pressedButtons });
     }
   }
 }
